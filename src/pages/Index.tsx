@@ -258,7 +258,7 @@ const Index = () => {
           {/* Recent Matches */}
           <div className="w-full lg:col-span-8">
             <EnhancedMatchTable 
-              data={recentMatches} 
+              matches={recentMatches} 
               title="Recent Matches"
               icon={<Trophy className="h-5 w-5" />}
               iconColor="text-app-amber"
