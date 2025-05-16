@@ -39,11 +39,11 @@ const EnhancedMediaCard: React.FC<MediaCardProps> = ({
 
   return (
     <div 
-      className={`rounded-lg text-card-foreground shadow-md overflow-hidden glass-card transition-all duration-500 ${className} ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      className={`rounded-lg text-card-foreground shadow-md overflow-hidden backdrop-blur-md border border-white/10 transition-all duration-500 ${className} ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="flex flex-col space-y-1.5 p-4 bg-gradient-to-r from-matt-100/50 to-matt-100/10">
+      <div className="flex flex-col space-y-1.5 p-4 bg-gradient-to-r from-matt-100/50 to-matt-100/10 border-b border-white/5">
         <h3 className="font-semibold tracking-tight text-lg">{title}</h3>
         {description && (
           <p className="text-xs text-gray-400">{description}</p>

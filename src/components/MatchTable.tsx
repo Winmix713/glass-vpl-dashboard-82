@@ -28,10 +28,10 @@ const MatchTable: React.FC<MatchTableProps> = ({ matches }) => {
   };
 
   return (
-    <div className="overflow-x-auto animate-fade-in">
+    <div className="overflow-x-auto animate-fade-in backdrop-blur-sm border border-white/10 rounded-lg p-2">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-matt-200">
+          <tr className="border-b border-white/10">
             <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Date</th>
             <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Home Team</th>
             <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Away Team</th>
@@ -43,7 +43,7 @@ const MatchTable: React.FC<MatchTableProps> = ({ matches }) => {
           {matches.map((match, index) => (
             <tr 
               key={index} 
-              className={`border-b border-matt-200 transition-colors hover:bg-matt-100/30`}
+              className={`border-b border-white/10 transition-colors hover:bg-matt-100/30`}
             >
               <td className="py-3 px-2 text-sm">{match.date}</td>
               <td className="py-3 px-2 text-sm font-medium">{match.homeTeam}</td>

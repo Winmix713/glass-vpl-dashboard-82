@@ -52,12 +52,12 @@ const GlassCard: React.FC<GlassCardProps> = ({
   };
 
   const borderClass = gradientBorder 
-    ? 'border-transparent bg-gradient-to-br p-[1px] from-matt-200/50 via-matt-200/10 to-matt-200/50'
+    ? 'border-transparent bg-gradient-to-br p-[1px] from-white/20 via-white/10 to-white/20'
     : 'border border-white/10';
 
   return (
     <div 
-      className={`text-card-foreground relative overflow-hidden backdrop-blur-xl ${borderClass} shadow-xl transition-all duration-300 hover:shadow-2xl rounded-lg ${fullHeight ? 'h-full flex flex-col' : ''} ${className}`}
+      className={`text-card-foreground relative overflow-hidden backdrop-blur-xl ${borderClass} shadow-lg transition-all duration-300 hover:shadow-xl rounded-lg ${fullHeight ? 'h-full flex flex-col' : ''} ${className}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >

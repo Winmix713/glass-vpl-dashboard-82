@@ -82,9 +82,10 @@ const StatCard: React.FC<StatCardProps> = ({
   }, [value]);
 
   return (
-    <div className={`rounded-lg border text-card-foreground glass-card glass-card-hover transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg ${colorMap[color].border} ${className}`}>
-      <div className="p-6">
-        <div className="flex items-center justify-between">
+    <div className={`rounded-lg border text-card-foreground glass-card glass-card-hover transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg backdrop-blur-md border-white/10 ${colorMap[color].border} ${className}`}>
+      <div className="p-6 relative overflow-hidden">
+        <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-white/5 rounded-full blur-xl"></div>
+        <div className="flex items-center justify-between relative z-10">
           <div className="flex flex-col">
             <span className="text-sm font-medium text-muted-foreground">{title}</span>
             <span 
@@ -94,12 +95,12 @@ const StatCard: React.FC<StatCardProps> = ({
               {value}
             </span>
           </div>
-          <div className={`h-12 w-12 rounded-lg ${colorMap[color].bg} flex items-center justify-center transition-transform duration-300 hover:scale-110`}>
+          <div className={`h-12 w-12 rounded-lg ${colorMap[color].bg} flex items-center justify-center transition-transform duration-300 hover:scale-110 border border-white/5`}>
             <Icon className={`h-6 w-6 ${colorMap[color].text}`} />
           </div>
         </div>
         {change && (
-          <div className="mt-4 flex items-center text-sm">
+          <div className="mt-4 flex items-center text-sm relative z-10">
             <span className={change.positive ? "text-app-green font-medium" : "text-app-red font-medium"}>
               {change.value}
             </span>

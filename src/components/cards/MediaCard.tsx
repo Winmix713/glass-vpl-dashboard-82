@@ -17,11 +17,11 @@ const MediaCard: React.FC<MediaCardComponentProps> = ({
   
   return (
     <div 
-      className={`rounded-lg border text-card-foreground shadow-md overflow-hidden glass-card transition-all duration-300 ${className}`}
+      className={`rounded-lg border text-card-foreground shadow-lg overflow-hidden glass-card transition-all duration-300 border-white/10 backdrop-blur-md ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="flex flex-col space-y-1.5 p-4 bg-gradient-to-r from-matt-100/50 to-matt-100/10">
+      <div className="flex flex-col space-y-1.5 p-4 bg-gradient-to-r from-matt-100/50 to-matt-100/10 border-b border-white/5">
         <h3 className="font-semibold tracking-tight text-lg">{title}</h3>
       </div>
       <div className={`relative p-0 aspect-video overflow-hidden`}>
@@ -62,7 +62,7 @@ const MediaCard: React.FC<MediaCardComponentProps> = ({
       </div>
       
       {description && (
-        <div className="p-4 pt-2">
+        <div className="p-4 pt-2 border-t border-white/5">
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
       )}

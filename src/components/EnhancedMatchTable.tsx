@@ -39,7 +39,7 @@ const EnhancedMatchTable: React.FC<MatchTableProps> = ({
   };
 
   const ActionButton = () => (
-    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 h-10 px-4 py-2 w-full border border-matt-200 hover:bg-matt-100 text-muted-foreground hover:text-white hover:border-matt-300">
+    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 h-10 px-4 py-2 w-full border border-white/10 hover:bg-matt-100 text-muted-foreground hover:text-white hover:border-white/20">
       View All Matches
     </button>
   );
@@ -55,7 +55,7 @@ const EnhancedMatchTable: React.FC<MatchTableProps> = ({
       <div className="overflow-x-auto animate-fade-in">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-matt-200">
+            <tr className="border-b border-white/10">
               <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Date</th>
               <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Home Team</th>
               <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Away Team</th>
@@ -67,7 +67,7 @@ const EnhancedMatchTable: React.FC<MatchTableProps> = ({
             {matches.map((match) => (
               <tr 
                 key={match.id} 
-                className={`border-b border-matt-200 transition-colors hover:bg-matt-100/30`}
+                className={`border-b border-white/10 transition-colors hover:bg-matt-100/30`}
               >
                 <td className="py-3 px-2 text-sm">{match.date}</td>
                 <td className="py-3 px-2 text-sm font-medium">{match.homeTeam}</td>

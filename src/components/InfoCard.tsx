@@ -22,13 +22,14 @@ const InfoCard: React.FC<InfoCardProps> = ({
 }) => {
   return (
     <div 
-      className={`rounded-lg border text-card-foreground ${bgColor} border-app-blue/20 backdrop-blur-md animate-on-load opacity-0 hover:bg-app-blue/15 transition-all duration-300 ${className}`}
+      className={`rounded-lg border text-card-foreground ${bgColor} border-white/10 backdrop-blur-md animate-on-load opacity-0 hover:bg-app-blue/15 transition-all duration-300 shadow-sm ${className}`}
     >
-      <div className="space-y-1.5 p-6 flex flex-row items-start gap-3 pb-2">
-        <div className={`${iconColor} mt-0.5`}>
+      <div className="space-y-1.5 p-6 flex flex-row items-start gap-3 pb-2 relative overflow-hidden">
+        <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-white/5 rounded-full blur-xl"></div>
+        <div className={`${iconColor} mt-0.5 z-10`}>
           {icon}
         </div>
-        <div>
+        <div className="z-10">
           <h3 className="font-semibold tracking-tight text-lg">{title}</h3>
           <p className="text-sm text-muted-foreground">
             {description}

@@ -93,11 +93,14 @@ const EnhancedStatCard: React.FC<StatCardProps> = ({
 
   return (
     <div 
-      className={`rounded-lg border text-card-foreground glass-card glass-card-hover transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg relative overflow-hidden ${className}`}
+      className={`rounded-lg border border-white/10 backdrop-blur-md text-card-foreground glass-card glass-card-hover transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg relative overflow-hidden ${className}`}
       style={{ animationDelay: `${animationDelay * 150}ms` }}
     >
-      <div className="p-6">
-        <div className="flex items-center justify-between">
+      <div className="p-6 relative">
+        <div className="absolute -bottom-16 -right-16 w-32 h-32 bg-white/5 rounded-full blur-xl"></div>
+        <div className="absolute -top-16 -left-16 w-32 h-32 bg-white/5 rounded-full blur-xl"></div>
+        
+        <div className="flex items-center justify-between relative z-10">
           <div className="flex flex-col">
             <span className="text-sm font-medium text-muted-foreground">{title}</span>
             <span 
@@ -107,12 +110,12 @@ const EnhancedStatCard: React.FC<StatCardProps> = ({
               {typeof value === 'number' ? '0' : value}
             </span>
           </div>
-          <div className={`h-12 w-12 rounded-lg ${iconBgColor} flex items-center justify-center transition-transform duration-300 hover:scale-110`}>
+          <div className={`h-12 w-12 rounded-lg ${iconBgColor} flex items-center justify-center transition-transform duration-300 hover:scale-110 border border-white/10`}>
             <Icon className={`h-6 w-6 ${iconColor}`} />
           </div>
         </div>
         {change && (
-          <div className="mt-4 flex items-center text-sm">
+          <div className="mt-4 flex items-center text-sm relative z-10">
             <span className={change.isPositive ? "text-app-green font-medium" : "text-app-red font-medium"}>
               {change.value}
             </span>
