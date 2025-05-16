@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -139,7 +138,7 @@ const Sidebar: React.FC = () => {
       icon: <BarChart2 className="h-5 w-5" />, 
       label: "Analysis", 
       sublabel: "Performance Analytics", 
-      badge: { text: "NEW", color: "blue" }, 
+      badge: { text: "NEW", color: "blue" as const }, 
       isActive: location.pathname === "/analysis" 
     },
     { 
@@ -155,7 +154,7 @@ const Sidebar: React.FC = () => {
       icon: <BarChart className="h-5 w-5" />, 
       label: "Statistics", 
       sublabel: "Advanced Statistics", 
-      badge: { text: "BETA", color: "blue" }, 
+      badge: { text: "BETA", color: "blue" as const }, 
       isActive: location.pathname === "/statistics" 
     },
     { 
