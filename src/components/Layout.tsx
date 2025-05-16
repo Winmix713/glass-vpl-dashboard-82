@@ -10,7 +10,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   return (
-    <div className="flex min-h-screen bg-matt">
+    <div className="flex min-h-screen bg-matt bg-gradient-to-br from-matt to-matt-50/95">
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden">

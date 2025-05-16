@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   PanelLeft, 
@@ -20,6 +20,22 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ title }) => {
   const location = useLocation();
+  const [scrolled, setScrolled] = useState(false);
+
+  // Add scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 10;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [scrolled]);
 
   const navItems = [
     { path: '/', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Dashboard' },
@@ -37,17 +53,19 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-matt border-b border-matt-200 shadow-md backdrop-blur-xl bg-matt/80 flex items-center justify-between px-4">
+    <header className={`sticky top-0 z-30 h-16 backdrop-blur-xl flex items-center justify-between px-4 transition-all duration-300 ${
+      scrolled ? 'bg-matt/80 shadow-lg' : 'bg-matt border-b border-matt-200'
+    }`}>
       <div className="flex items-center gap-4">
         <button
-          className="inline-flex items-center justify-center h-7 w-7 lg:hidden hover:bg-matt-100 rounded-md transition-colors duration-200"
+          className="inline-flex items-center justify-center h-8 w-8 lg:hidden hover:bg-matt-100 rounded-md transition-all duration-200 hover:text-white"
           onClick={triggerSidebarToggle}
         >
           <PanelLeft className="h-5 w-5 text-gray-300" />
           <span className="sr-only">Toggle Sidebar</span>
         </button>
         <div className="md:block">
-          <h1 className="text-lg font-semibold text-white">{title}</h1>
+          <h1 className="text-lg font-semibold text-white bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">{title}</h1>
         </div>
       </div>
 
@@ -59,8 +77,10 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
               key={item.path}
               to={item.path}
               className={`
-                flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors
-                ${isActive ? 'bg-matt-100 text-white' : 'text-gray-400 hover:text-white hover:bg-matt-100/50'}
+                flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200
+                ${isActive 
+                  ? 'bg-matt-100 text-white' 
+                  : 'text-gray-400 hover:text-white hover:bg-matt-100/50'}
               `}
             >
               {item.icon}
@@ -71,9 +91,9 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
       </nav>
 
       <div className="flex items-center gap-2">
-        <button className="inline-flex items-center justify-center h-10 w-10 relative hover:bg-matt-100 rounded-full transition-colors duration-200">
-          <Bell className="h-5 w-5 text-gray-400" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-app-blue rounded-full" />
+        <button className="inline-flex items-center justify-center h-10 w-10 relative hover:bg-matt-100 rounded-full transition-all duration-200 group">
+          <Bell className="h-5 w-5 text-gray-400 group-hover:text-white" />
+          <span className="absolute top-1 right-1 w-2 h-2 bg-app-blue rounded-full group-hover:animate-pulse" />
         </button>
       </div>
     </header>

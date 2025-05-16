@@ -38,9 +38,9 @@ const NavItem: React.FC<NavItemProps> = ({
   return (
     <Link 
       to={to} 
-      className={`nav-item ${isActive ? 'nav-item-active' : 'nav-item-inactive'}`}
+      className={`nav-item group ${isActive ? 'nav-item-active' : 'nav-item-inactive'}`}
     >
-      <span className="flex items-center justify-center w-6 h-6 mr-3">
+      <span className="flex items-center justify-center w-6 h-6 mr-3 transition-transform group-hover:scale-110">
         {icon}
       </span>
       <div className="flex-1">
@@ -53,7 +53,7 @@ const NavItem: React.FC<NavItemProps> = ({
         </span>
       )}
       {chevron && (
-        <ChevronRight className="ml-2 text-gray-500 h-4 w-4" />
+        <ChevronRight className="ml-2 text-gray-500 h-4 w-4 transition-all group-hover:transform group-hover:translate-x-1" />
       )}
     </Link>
   );
@@ -106,7 +106,8 @@ const Sidebar: React.FC = () => {
     w-[240px] h-full bg-matt flex flex-col pt-4 fixed inset-y-0 left-0 z-50 
     transform transition-all duration-300 ease-in-out
     ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-    lg:translate-x-0 lg:static lg:z-auto border-r border-matt-200
+    lg:translate-x-0 lg:static lg:z-auto border-r border-matt-200 backdrop-blur-sm
+    bg-gradient-to-b from-matt to-matt-50/90
   `;
 
   const navItems = [
@@ -176,14 +177,14 @@ const Sidebar: React.FC = () => {
   ];
 
   const Logo = () => (
-    <div className="px-4 mb-4">
+    <div className="px-4 mb-6">
       <Link to="/" className="flex items-center gap-1.5 group">
-        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-app-blue to-app-blue/70 flex items-center justify-center shadow-md shadow-app-blue/20">
+        <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-app-blue to-app-blue/70 flex items-center justify-center shadow-md shadow-app-blue/20 group-hover:shadow-app-blue/30 group-hover:from-app-blue/90 group-hover:to-app-blue/60 transition-all duration-300">
           <Trophy className="text-white h-4 w-4" />
         </div>
         <div className="flex flex-col">
-          <span className="font-bold text-base tracking-tight text-white">WINMIX</span>
-          <span className="text-[8px] -mt-0.5 text-app-blue/80">TIPSTER</span>
+          <span className="font-bold text-base tracking-tight text-white bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">WINMIX</span>
+          <span className="text-[8px] -mt-0.5 text-app-blue">TIPSTER</span>
         </div>
       </Link>
     </div>
@@ -194,28 +195,31 @@ const Sidebar: React.FC = () => {
       {/* Overlay for mobile when sidebar is open */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ease-in-out"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ease-in-out backdrop-blur-sm"
           onClick={() => setIsOpen(false)}
         />
       )}
       
       <aside className={sidebarClass}>
-        <Logo />
-        
-        <nav className="flex-1 px-3 space-y-1 overflow-y-auto scrollbar-none animate-fade-in">
-          {navItems.map((item) => (
-            <NavItem
-              key={item.label}
-              to={item.to}
-              icon={item.icon}
-              label={item.label}
-              sublabel={item.sublabel}
-              badge={item.badge}
-              chevron={item.chevron}
-              isActive={item.isActive}
-            />
-          ))}
-        </nav>
+        <div className="absolute inset-0 bg-matt-100/5 backdrop-blur-sm pointer-events-none"></div>
+        <div className="relative z-10">
+          <Logo />
+          
+          <nav className="flex-1 px-3 space-y-1 overflow-y-auto scrollbar-none">
+            {navItems.map((item) => (
+              <NavItem
+                key={item.label}
+                to={item.to}
+                icon={item.icon}
+                label={item.label}
+                sublabel={item.sublabel}
+                badge={item.badge}
+                chevron={item.chevron}
+                isActive={item.isActive}
+              />
+            ))}
+          </nav>
+        </div>
       </aside>
     </>
   );

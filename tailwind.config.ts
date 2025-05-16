@@ -81,6 +81,9 @@ export default {
           red: '#ef4444',
         }
 			},
+			fontFamily: {
+				inter: ['Inter', 'sans-serif'],
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
