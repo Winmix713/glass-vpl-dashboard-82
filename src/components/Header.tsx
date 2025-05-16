@@ -16,9 +16,10 @@ import {
 
 interface HeaderProps {
   title: string;
+  onToggleSidebar: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ title }) => {
+const Header: React.FC<HeaderProps> = ({ title, onToggleSidebar }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
@@ -48,18 +49,14 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
     { path: '/settings', icon: <Settings className="w-4 h-4" />, label: 'Settings' },
   ];
 
-  const triggerSidebarToggle = () => {
-    window.dispatchEvent(new Event('toggle-sidebar'));
-  };
-
   return (
     <header className={`sticky top-0 z-30 h-16 backdrop-blur-xl flex items-center justify-between px-4 transition-all duration-300 ${
-      scrolled ? 'bg-matt/80 shadow-lg' : 'bg-matt border-b border-matt-200'
+      scrolled ? 'bg-matt/80 shadow-lg' : 'bg-matt border-b border-matt-200/30'
     }`}>
       <div className="flex items-center gap-4">
         <button
           className="inline-flex items-center justify-center h-8 w-8 lg:hidden hover:bg-matt-100 rounded-md transition-all duration-200 hover:text-white"
-          onClick={triggerSidebarToggle}
+          onClick={onToggleSidebar}
         >
           <PanelLeft className="h-5 w-5 text-gray-300" />
           <span className="sr-only">Toggle Sidebar</span>

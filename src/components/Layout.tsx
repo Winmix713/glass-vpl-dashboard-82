@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
@@ -9,12 +9,18 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, title }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
-    <div className="flex min-h-screen bg-matt bg-gradient-to-br from-matt to-matt-50/95">
-      <Sidebar />
+    <div className="flex min-h-screen bg-matt bg-gradient-to-br from-matt to-matt-50/95 noise-texture">
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title={title} />
+      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+        <Header title={title} onToggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto">
           {children}
         </main>

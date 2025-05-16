@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -9,7 +10,8 @@ import {
   BarChart, 
   Shield, 
   Settings,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -37,7 +39,7 @@ const NavItem: React.FC<NavItemProps> = ({
   return (
     <Link 
       to={to} 
-      className={`nav-item group ${isActive ? 'nav-item-active' : 'nav-item-inactive'}`}
+      className={`nav-item group transition-all duration-300 ${isActive ? 'nav-item-active' : 'nav-item-inactive'}`}
     >
       <span className="flex items-center justify-center w-6 h-6 mr-3 transition-transform group-hover:scale-110">
         {icon}
@@ -58,19 +60,21 @@ const NavItem: React.FC<NavItemProps> = ({
   );
 };
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ 
+  isOpen = true, 
+  onClose 
+}) => {
   const [isMobile, setIsMobile] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth >= 1024) {
-        setIsOpen(true);
-      } else {
-        setIsOpen(false);
-      }
     };
 
     checkScreenSize();
@@ -78,34 +82,18 @@ const Sidebar: React.FC = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
-
   // Close sidebar on mobile when a link is clicked
   useEffect(() => {
-    if (isMobile) {
-      setIsOpen(false);
+    if (isMobile && onClose) {
+      onClose();
     }
-  }, [location.pathname, isMobile]);
-
-  // Make sidebar externally controllable via an event
-  useEffect(() => {
-    const handleToggle = () => {
-      setIsOpen(prev => !prev);
-    };
-
-    window.addEventListener('toggle-sidebar', handleToggle);
-    return () => {
-      window.removeEventListener('toggle-sidebar', handleToggle);
-    };
-  }, []);
+  }, [location.pathname, isMobile, onClose]);
 
   const sidebarClass = `
     w-[240px] h-full bg-matt flex flex-col pt-4 fixed inset-y-0 left-0 z-50 
     transform transition-all duration-300 ease-in-out
     ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-    lg:translate-x-0 lg:static lg:z-auto border-r border-matt-200 backdrop-blur-sm
+    lg:translate-x-0 lg:static lg:z-auto border-r border-matt-200/30 backdrop-blur-sm
     bg-gradient-to-b from-matt to-matt-50/90
   `;
 
@@ -195,12 +183,23 @@ const Sidebar: React.FC = () => {
       {isMobile && isOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden transition-opacity duration-300 ease-in-out backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
+          onClick={onClose}
         />
       )}
       
       <aside className={sidebarClass}>
         <div className="absolute inset-0 bg-matt-100/5 backdrop-blur-sm pointer-events-none"></div>
+        
+        {/* Mobile close button */}
+        {isMobile && (
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-matt-100/50 text-gray-400 hover:text-white hover:bg-matt-200/50 transition-all"
+          >
+            <X size={18} />
+          </button>
+        )}
+        
         <div className="relative z-10">
           <Logo />
           
