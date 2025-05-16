@@ -1,4 +1,3 @@
-
 export type MatchStatus = 'completed' | 'live' | 'upcoming' | 'Completed' | 'Live' | 'Upcoming';
 
 export interface Match {
@@ -7,13 +6,16 @@ export interface Match {
   homeTeam: string;
   awayTeam: string;
   score: string;
-  status: MatchStatus;
+  status: string;
 }
 
 export interface TeamInfo {
+  id: string;
   name: string;
-  abbreviation: string;
-  shortCode?: string;
+  stats: string;
+  record: string;
+  trend: 'up' | 'down';
+  change: string;
 }
 
 export interface UpcomingMatch {
@@ -40,4 +42,4 @@ export interface MediaCardProps {
 }
 
 // Add type for icon props
-export type IconComponent = React.ComponentType<{ className?: string }>;
+export type IconComponent = React.FC<{ className?: string }>;
