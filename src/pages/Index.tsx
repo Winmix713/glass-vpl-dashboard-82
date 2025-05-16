@@ -1,13 +1,198 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from 'react';
+import Layout from '@/components/Layout';
+import StatCard from '@/components/cards/StatCard';
+import GlassCard from '@/components/cards/GlassCard';
+import MediaCard from '@/components/cards/MediaCard';
+import MatchTable from '@/components/MatchTable';
+import MatchCard from '@/components/MatchCard';
+import { Trophy, Users, Calendar, BarChart, Info } from 'lucide-react';
 
 const Index = () => {
+  // Sample data
+  const recentMatches = [
+    { date: '2025-05-15', homeTeam: 'Liverpool', awayTeam: 'Manchester Kék', score: '2-1', status: 'completed' },
+    { date: '2025-05-16', homeTeam: 'London Ágyúk', awayTeam: 'Chelsea', score: '0-0', status: 'live' },
+    { date: '2025-05-17', homeTeam: 'Tottenham', awayTeam: 'West Ham', score: '3-2', status: 'completed' },
+    { date: '2025-05-18', homeTeam: 'Aston Oroszlán', awayTeam: 'Everton', score: '-', status: 'upcoming' },
+    { date: '2025-05-19', homeTeam: 'Newcastle', awayTeam: 'Brighton', score: '-', status: 'upcoming' },
+  ];
+
+  const upcomingMatches = [
+    {
+      date: '2025-05-18',
+      time: '15:00',
+      league: 'Virtual Premier League',
+      homeTeam: { name: 'Aston Oroszlán', abbreviation: 'AO' },
+      awayTeam: { name: 'Everton', abbreviation: 'EV' },
+    },
+    {
+      date: '2025-05-19',
+      time: '20:00',
+      league: 'Virtual Premier League',
+      homeTeam: { name: 'Newcastle', abbreviation: 'NC' },
+      awayTeam: { name: 'Brighton', abbreviation: 'BR' },
+    },
+    {
+      date: '2025-05-20',
+      time: '16:45',
+      league: 'Virtual Premier League',
+      homeTeam: { name: 'London Ágyúk', abbreviation: 'LÁ' },
+      awayTeam: { name: 'Vörös Ördögök', abbreviation: 'VÖ' },
+    },
+  ];
+
+  const ActionButton = ({ label }: { label: string }) => (
+    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors h-10 px-4 py-2 w-full border border-matt-200 hover:bg-matt-100 text-muted-foreground">
+      {label}
+    </button>
+  );
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <Layout title="Dashboard">
+      <div className="w-full px-4 py-8 space-y-6 max-w-7xl mx-auto">
+        {/* Hero section */}
+        <div className="flex flex-col gap-4 animate-fade-in">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Dashboard</h1>
+          <p className="text-muted-foreground">Overview of your Virtual Premier League management system</p>
+        </div>
+
+        {/* Info Card */}
+        <div className="rounded-lg border text-card-foreground bg-app-blue/10 border-app-blue/20 backdrop-blur-sm animate-fade-in">
+          <div className="space-y-1.5 p-6 flex flex-row items-start gap-3 pb-2">
+            <Info className="h-5 w-5 text-app-blue mt-0.5" />
+            <div>
+              <h3 className="font-semibold tracking-tight text-lg">Virtual Premier League Teams Only</h3>
+              <p className="text-sm text-muted-foreground">
+                This platform exclusively features Virtual Premier League teams. All match data and statistics 
+                refer to these virtual teams, not actual Premier League teams.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Header Video */}
+        <MediaCard 
+          title="Premier League Header" 
+          mediaType="video" 
+          src="https://player.vimeo.com/progressive_redirect/playback/859314337/rendition/1080p/file.mp4?loc=external&signature=086f2dff273737c68e918e0e6cc07912b0b15913a05c1e48fa59e573a29c5234&user_id=644152"
+          aspectRatio="21/9"
+        />
+
+        {/* Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full animate-fade-in">
+          <StatCard 
+            title="Total Teams" 
+            value={16} 
+            change={{ value: '+4', positive: true, text: 'from last month' }} 
+            icon={Users} 
+            color="blue" 
+          />
+          <StatCard 
+            title="Upcoming Matches" 
+            value={18} 
+            change={{ value: '+2', positive: true, text: 'from last week' }} 
+            icon={Calendar} 
+            color="green" 
+          />
+          <StatCard 
+            title="Prediction Accuracy" 
+            value="76%" 
+            change={{ value: '+2.5%', positive: true, text: 'from last month' }} 
+            icon={BarChart} 
+            color="purple" 
+          />
+          <StatCard 
+            title="Active Leagues" 
+            value={1} 
+            change={{ value: 'Virtual Premier League', text: '' }} 
+            icon={Trophy} 
+            color="amber" 
+          />
+        </div>
+
+        {/* Media Grid */}
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 my-6">
+          <MediaCard 
+            title="Premier League Case Study" 
+            mediaType="iframe" 
+            src="https://player.vimeo.com/video/854948211?h=f6230ed63b&title=0&byline=0&portrait=0&color=ffffff&muted=1&autopause=0&controls=0&loop=1&app_id=122963"
+          />
+          <MediaCard 
+            title="Premier League Presents" 
+            mediaType="iframe" 
+            src="https://player.vimeo.com/video/854712871?h=f166775e66&title=0&byline=0&portrait=0&color=ffffff&muted=1&autopause=0&controls=0&loop=1&app_id=122963"
+          />
+        </div>
+
+        {/* Content Grid */}
+        <div className="w-full grid gap-6 grid-cols-1 lg:grid-cols-12">
+          {/* Recent Matches */}
+          <div className="w-full lg:col-span-8">
+            <GlassCard 
+              title="Recent Matches" 
+              icon={Trophy} 
+              iconColor="text-app-amber"
+              action={<ActionButton label="View All Matches" />}
+            >
+              <MatchTable matches={recentMatches} />
+            </GlassCard>
+
+            {/* Video Grid */}
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mt-6">
+              <MediaCard 
+                title="Premier League Logo" 
+                mediaType="video" 
+                src="https://s3.eu-west-2.amazonaws.com/nomadstudio-com/videos/premier-league-rebrand-new-logo.mp4" 
+              />
+              <MediaCard 
+                title="Premier League Clubs" 
+                mediaType="video" 
+                src="https://s3.eu-west-2.amazonaws.com/nomadstudio-com/videos/premier-league-rebrand-clubs.mp4" 
+              />
+              <MediaCard 
+                title="Premier League Colors" 
+                mediaType="video" 
+                src="https://s3.eu-west-2.amazonaws.com/nomadstudio-com/videos/premier-league-rebrand-colour-2.mp4" 
+              />
+            </div>
+          </div>
+
+          {/* Upcoming Matches */}
+          <div className="w-full lg:col-span-4">
+            <GlassCard 
+              title="Upcoming Matches" 
+              icon={Calendar} 
+              iconColor="text-app-green"
+              action={<ActionButton label="View All Upcoming" />}
+              fullHeight
+            >
+              <div className="space-y-4">
+                {upcomingMatches.map((match, index) => (
+                  <MatchCard 
+                    key={index}
+                    date={match.date}
+                    time={match.time}
+                    league={match.league}
+                    homeTeam={match.homeTeam}
+                    awayTeam={match.awayTeam}
+                  />
+                ))}
+              </div>
+            </GlassCard>
+
+            {/* Broadcast Media Card */}
+            <div className="mt-6">
+              <MediaCard 
+                title="Broadcast Head to Head" 
+                mediaType="iframe" 
+                src="https://player.vimeo.com/video/854717626?h=db2dafd636&title=0&byline=0&portrait=0&color=ffffff&muted=1&autopause=0&controls=0&loop=1&app_id=122963" 
+              />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
