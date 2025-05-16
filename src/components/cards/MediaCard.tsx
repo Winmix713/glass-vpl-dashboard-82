@@ -1,29 +1,20 @@
 
 import React, { useState } from 'react';
+import { MediaCardProps } from '@/types';
 
-interface MediaCardProps {
-  title: string;
-  mediaType: 'video' | 'iframe';
-  src: string;
-  aspectRatio?: 'video' | 'square' | '21/9';
+interface MediaCardComponentProps extends MediaCardProps {
   className?: string;
 }
 
-const MediaCard: React.FC<MediaCardProps> = ({ 
+const MediaCard: React.FC<MediaCardComponentProps> = ({ 
   title, 
-  mediaType, 
-  src, 
-  aspectRatio = 'video',
-  className = ''
+  videoSrc, 
+  isIframe = false,
+  description,
+  className = '' 
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   
-  const aspectRatioClass = {
-    video: 'aspect-video',
-    square: 'aspect-square',
-    '21/9': 'aspect-[21/9]'
-  }[aspectRatio];
-
   return (
     <div 
       className={`rounded-lg border text-card-foreground shadow-md overflow-hidden glass-card transition-all duration-300 ${className}`}
@@ -33,11 +24,11 @@ const MediaCard: React.FC<MediaCardProps> = ({
       <div className="flex flex-col space-y-1.5 p-4 bg-gradient-to-r from-matt-100/50 to-matt-100/10">
         <h3 className="font-semibold tracking-tight text-lg">{title}</h3>
       </div>
-      <div className={`relative p-0 ${aspectRatioClass} overflow-hidden`}>
-        {mediaType === 'video' ? (
+      <div className={`relative p-0 aspect-video overflow-hidden`}>
+        {!isIframe ? (
           <>
             <video 
-              src={src} 
+              src={videoSrc} 
               className="h-full w-full object-cover transition-transform duration-700 ease-in-out"
               style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
               autoPlay 
@@ -50,7 +41,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
         ) : (
           <>
             <iframe 
-              src={src} 
+              src={videoSrc} 
               className="h-full w-full" 
               frameBorder="0" 
               allow="autoplay; fullscreen; picture-in-picture" 
@@ -69,6 +60,12 @@ const MediaCard: React.FC<MediaCardProps> = ({
           </div>
         </div>
       </div>
+      
+      {description && (
+        <div className="p-4 pt-2">
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+      )}
     </div>
   );
 };

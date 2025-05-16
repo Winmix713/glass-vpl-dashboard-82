@@ -38,3 +38,6 @@ export interface MediaCardProps {
   description?: string;
   animationDelay?: number;
 }
+
+// Add type for icon props
+export type IconComponent = React.ComponentType<{ className?: string }>;
