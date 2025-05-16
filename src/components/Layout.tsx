@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import Sidebar from './Sidebar';
+import GlassSidebar from './GlassSidebar';
 import Header from './Header';
 
 interface LayoutProps {
@@ -17,7 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
 
   return (
     <div className="flex min-h-screen bg-matt bg-gradient-to-br from-matt to-matt-50/95 noise-texture">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <GlassSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         <Header title={title} onToggleSidebar={toggleSidebar} />

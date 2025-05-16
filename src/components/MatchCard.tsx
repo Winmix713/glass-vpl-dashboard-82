@@ -23,18 +23,19 @@ const MatchCard: React.FC<MatchCardProps> = ({
   awayTeam
 }) => {
   return (
-    <div className="backdrop-blur-sm rounded-lg p-3 hover:bg-matt-100/30 transition-colors relative overflow-hidden">
-      {/* Glass border effect */}
-      <div className="absolute inset-0 border border-white/10 rounded-lg pointer-events-none"></div>
+    <div className="backdrop-blur-sm rounded-lg p-3 hover:bg-matt-100/30 transition-colors duration-300 relative overflow-hidden group">
+      {/* Enhanced glass border effect */}
+      <div className="absolute inset-0 border border-white/10 rounded-lg pointer-events-none transition-all duration-300 group-hover:border-white/20"></div>
       
-      {/* Glass reflective top border */}
-      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-white/0 via-white/20 to-white/0 rounded-t-lg"></div>
+      {/* Enhanced glass reflective top border */}
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-white/0 via-white/30 to-white/0 rounded-t-lg"></div>
       
-      {/* Glass reflective left/right borders */}
-      <div className="absolute left-0 inset-y-0 w-[1px] bg-gradient-to-b from-white/10 via-white/5 to-white/0"></div>
-      <div className="absolute right-0 inset-y-0 w-[1px] bg-gradient-to-b from-white/10 via-white/5 to-white/0"></div>
+      {/* Enhanced glass reflective left/right borders */}
+      <div className="absolute left-0 inset-y-0 w-[1px] bg-gradient-to-b from-white/15 via-white/10 to-white/0"></div>
+      <div className="absolute right-0 inset-y-0 w-[1px] bg-gradient-to-b from-white/15 via-white/10 to-white/0"></div>
       
-      <div className="absolute -bottom-16 -right-16 w-32 h-32 bg-white/5 rounded-full blur-xl"></div>
+      {/* Enhanced glow effect */}
+      <div className="absolute -bottom-16 -right-16 w-32 h-32 bg-white/5 rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
       
       <div className="flex items-center justify-between mb-1 relative z-10">
         <span className="text-xs text-muted-foreground">{date} {time}</span>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import GlassCard from '@/components/cards/GlassCard';
@@ -8,6 +7,7 @@ import UpcomingMatches from '@/components/UpcomingMatches';
 import EnhancedStatCard from '@/components/cards/EnhancedStatCard';
 import InfoCard from '@/components/InfoCard';
 import { Trophy, Users, Calendar, BarChart, Info } from 'lucide-react';
+import { Match } from '@/types';
 
 const Index = () => {
   // Add parallax effect to background blobs
@@ -30,12 +30,12 @@ const Index = () => {
   }, []);
 
   // Sample data
-  const recentMatches = [
-    { id: "1", date: '2025-05-15', homeTeam: 'Liverpool', awayTeam: 'Manchester Kék', score: '2-1', status: 'Completed' as const },
-    { id: "2", date: '2025-05-16', homeTeam: 'London Ágyúk', awayTeam: 'Chelsea', score: '0-0', status: 'Live' as const },
-    { id: "3", date: '2025-05-17', homeTeam: 'Tottenham', awayTeam: 'West Ham', score: '3-2', status: 'Completed' as const },
-    { id: "4", date: '2025-05-18', homeTeam: 'Aston Oroszlán', awayTeam: 'Everton', score: '-', status: 'Upcoming' as const },
-    { id: "5", date: '2025-05-19', homeTeam: 'Newcastle', awayTeam: 'Brighton', score: '-', status: 'Upcoming' as const },
+  const recentMatches: Match[] = [
+    { id: "1", date: '2025-05-15', homeTeam: 'Liverpool', awayTeam: 'Manchester Kék', score: '2-1', status: 'Completed' },
+    { id: "2", date: '2025-05-16', homeTeam: 'London Ágyúk', awayTeam: 'Chelsea', score: '0-0', status: 'Live' },
+    { id: "3", date: '2025-05-17', homeTeam: 'Tottenham', awayTeam: 'West Ham', score: '3-2', status: 'Completed' },
+    { id: "4", date: '2025-05-18', homeTeam: 'Aston Oroszlán', awayTeam: 'Everton', score: '-', status: 'Upcoming' },
+    { id: "5", date: '2025-05-19', homeTeam: 'Newcastle', awayTeam: 'Brighton', score: '-', status: 'Upcoming' },
   ];
 
   const upcomingMatches = [
@@ -44,24 +44,24 @@ const Index = () => {
       date: '2025-05-18',
       time: '15:00',
       league: 'Virtual Premier League',
-      homeTeam: { name: 'Aston Oroszlán', shortCode: 'AO' },
-      awayTeam: { name: 'Everton', shortCode: 'EV' },
+      homeTeam: { name: 'Aston Oroszlán', shortCode: 'AO', abbreviation: 'AO' },
+      awayTeam: { name: 'Everton', shortCode: 'EV', abbreviation: 'EV' },
     },
     {
       id: "2",
       date: '2025-05-19',
       time: '20:00',
       league: 'Virtual Premier League',
-      homeTeam: { name: 'Newcastle', shortCode: 'NC' },
-      awayTeam: { name: 'Brighton', shortCode: 'BR' },
+      homeTeam: { name: 'Newcastle', shortCode: 'NC', abbreviation: 'NC' },
+      awayTeam: { name: 'Brighton', shortCode: 'BR', abbreviation: 'BR' },
     },
     {
       id: "3",
       date: '2025-05-20',
       time: '16:45',
       league: 'Virtual Premier League',
-      homeTeam: { name: 'London Ágyúk', shortCode: 'LÁ' },
-      awayTeam: { name: 'Vörös Ördögök', shortCode: 'VÖ' },
+      homeTeam: { name: 'London Ágyúk', shortCode: 'LÁ', abbreviation: 'LÁ' },
+      awayTeam: { name: 'Vörös Ördögök', shortCode: 'VÖ', abbreviation: 'VÖ' },
     },
   ];
 
@@ -258,7 +258,7 @@ const Index = () => {
           {/* Recent Matches */}
           <div className="w-full lg:col-span-8">
             <EnhancedMatchTable 
-              matches={recentMatches} 
+              data={recentMatches} 
               title="Recent Matches"
               icon={<Trophy className="h-5 w-5" />}
               iconColor="text-app-amber"
