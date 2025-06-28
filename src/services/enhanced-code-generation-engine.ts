@@ -49,9 +49,17 @@ export class EnhancedCodeGenerationEngine {
   }
 
   /**
+   * Initialize performance monitoring
+   */
+  private initializePerformanceMonitoring(): void {
+    this.performanceMetrics.set('startup', Date.now());
+  }
+
+  /**
    * Extract SVG content from Figma data
    */
   async extractSVGFromFigma(figmaData: any): Promise<string> {
+    // ... keep existing code (SVG extraction logic) the same
     try {
       // Simple SVG extraction from Figma data
       if (figmaData?.document?.children) {
@@ -193,7 +201,7 @@ export class EnhancedCodeGenerationEngine {
       };
 
       // Cache the result
-      await memoryManager.set(`generation-${sessionId}`, result);
+      await memoryManager.store(`generation-${sessionId}`, result);
 
       console.log(`[${sessionId}] Code generation completed successfully`);
       progressCallback?.(100, 'Complete!');
@@ -288,35 +296,6 @@ export default GeneratedComponent;`;
     if (codeString.includes('document.write')) score -= 25;
     
     return Math.max(score, 0);
-  }
-
-  private async performTreeShaking(code: any): Promise<any> {
-    // Placeholder implementation
-    return code;
-  }
-
-  private async applySplitting(code: any): Promise<any> {
-    // Placeholder implementation
-    return code;
-  }
-
-  private async enhanceAccessibility(code: any): Promise<any> {
-    // Add ARIA labels and semantic HTML
-    if (typeof code.componentCode === 'string') {
-      code.componentCode = code.componentCode
-        .replace(/<div>/g, '<div role="main">')
-        .replace(/<button([^>]*)>/g, '<button$1 aria-label="Generated button">');
-    }
-    return code;
-  }
-
-  private async optimizePerformance(code: any): Promise<any> {
-    // Add React.memo and other optimizations
-    if (typeof code.componentCode === 'string') {
-      code.componentCode = code.componentCode
-        .replace('const GeneratedComponent', 'const GeneratedComponent = React.memo(() =>');
-    }
-    return code;
   }
 
   private extractImports(content: string): string[] {
@@ -496,7 +475,7 @@ export default GeneratedComponent;`;
     config: CodeGenerationConfig
   ): Promise<{ jsx: string; css: string }> {
     // Use web worker for intensive processing
-    const processingResult = await workerManager.executeTask('TRANSFORM_CODE', {
+    const processingResult = await workerManager.processInWorker('codeProcessingWorker', {
       type: 'generateComponents',
       data: {
         designAnalysis,
@@ -567,33 +546,92 @@ export default GeneratedComponent;`;
     };
   }
 
-  private async performTreeShaking(code: any): Promise<any> {
-    // Placeholder implementation
-    return code;
+  /**
+   * Assemble the final code structure
+   */
+  private async assembleFinalCode(adaptedCode: any, structure: ProjectStructure, config: CodeGenerationConfig): Promise<any> {
+    const files: CodeFile[] = [];
+    
+    // Create main component file
+    files.push({
+      path: 'src/components/GeneratedComponent.tsx',
+      content: adaptedCode.componentCode || this.generateFallbackJSX(config),
+      language: this.detectLanguage('GeneratedComponent.tsx'),
+      size: (adaptedCode.componentCode || this.generateFallbackJSX(config)).length,
+      imports: this.extractImports(adaptedCode.componentCode || ''),
+      exports: this.extractExports(adaptedCode.componentCode || '')
+    });
+
+    // Create style file
+    files.push({
+      path: 'src/styles/generated.css',
+      content: adaptedCode.styleCode || this.generateFallbackCSS(config),
+      language: 'css',
+      size: (adaptedCode.styleCode || this.generateFallbackCSS(config)).length,
+      imports: [],
+      exports: []
+    });
+
+    return {
+      files,
+      structure,
+      preview: this.generatePreview(adaptedCode.componentCode || this.generateFallbackJSX(config))
+    };
   }
 
-  private async applySplitting(code: any): Promise<any> {
-    // Placeholder implementation
-    return code;
+  /**
+   * Calculate code metrics
+   */
+  private calculateMetrics(finalCode: any, startTime: number): CodeMetrics {
+    const totalSize = finalCode.files.reduce((sum: number, file: CodeFile) => sum + file.size, 0);
+    const componentFile = finalCode.files.find((f: CodeFile) => f.path.includes('Component'));
+    const complexity = componentFile ? this.calculateComplexity(componentFile.content) : 1;
+    
+    return {
+      linesOfCode: finalCode.files.reduce((sum: number, file: CodeFile) => sum + file.content.split('\n').length, 0),
+      fileCount: finalCode.files.length,
+      componentCount: finalCode.files.filter((f: CodeFile) => f.path.includes('Component')).length,
+      totalSize,
+      complexity,
+      maintainabilityIndex: componentFile ? this.calculateMaintainabilityIndex(componentFile.content) : 80,
+      duplicateLines: componentFile ? this.findDuplicateLines(componentFile.content) : 0,
+      generationTime: Date.now() - startTime
+    };
   }
 
-  private async enhanceAccessibility(code: any): Promise<any> {
-    // Add ARIA labels and semantic HTML
-    if (typeof code.componentCode === 'string') {
-      code.componentCode = code.componentCode
-        .replace(/<div>/g, '<div role="main">')
-        .replace(/<button([^>]*)>/g, '<button$1 aria-label="Generated button">');
-    }
-    return code;
-  }
+  /**
+   * Validate the build
+   */
+  private async validateBuild(finalCode: any, config: CodeGenerationConfig): Promise<BuildLog[]> {
+    const logs: BuildLog[] = [];
+    
+    finalCode.files.forEach((file: CodeFile) => {
+      // Check for missing imports
+      const missingImports = this.findMissingImports(file.content, file.imports);
+      missingImports.forEach(imp => {
+        logs.push({
+          level: 'warn',
+          message: `Missing import: ${imp}`,
+          file: file.path,
+          line: 1
+        });
+      });
 
-  private async optimizePerformance(code: any): Promise<any> {
-    // Add React.memo and other optimizations
-    if (typeof code.componentCode === 'string') {
-      code.componentCode = code.componentCode
-        .replace('const GeneratedComponent', 'const GeneratedComponent = React.memo(() =>');
-    }
-    return code;
+      // TypeScript validation
+      if (config.typescript && file.language === 'typescript') {
+        const tsIssues = this.validateTypeScript(file.content);
+        tsIssues.forEach(issue => {
+          logs.push({
+            level: 'error',
+            message: issue,
+            file: file.path,
+            line: 1
+          });
+        });
+      }
+    });
+
+    return logs;
   }
 }
 

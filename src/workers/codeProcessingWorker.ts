@@ -2,7 +2,7 @@
 // Worker for processing code generation tasks
 /// <reference lib="webworker" />
 
-declare const self: ServiceWorkerGlobalScope;
+declare const self: DedicatedWorkerGlobalScope;
 
 export interface CodeProcessingTask {
   type: 'parse' | 'transform' | 'optimize' | 'validate';
