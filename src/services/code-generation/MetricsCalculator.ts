@@ -1,3 +1,4 @@
+
 import { CodeMetrics, CodeFile } from '@/types/code-generation';
 
 export class MetricsCalculator {
@@ -19,14 +20,18 @@ export class MetricsCalculator {
     const totalSize = finalCode.files.reduce((sum: number, file: CodeFile) => sum + file.size, 0);
     const componentFile = finalCode.files.find((f: CodeFile) => f.path.includes('Component'));
     const complexity = componentFile ? this.calculateComplexity(componentFile.content) : 1;
+    const componentCount = finalCode.files.filter((f: CodeFile) => f.path.includes('Component')).length;
+    const linesOfCode = finalCode.files.reduce((sum: number, file: CodeFile) => sum + file.content.split('\n').length, 0);
+    const duplicateLines = componentFile ? this.findDuplicateLines(componentFile.content) : 0;
+    const maintainabilityIndex = componentFile ? this.calculateMaintainabilityIndex(componentFile.content) : 80;
     
     return {
-      linesOfCode: finalCode.files.reduce((sum: number, file: CodeFile) => sum + file.content.split('\n').length, 0),
-      componentCount: finalCode.files.filter((f: CodeFile) => f.path.includes('Component')).length,
+      linesOfCode,
+      componentCount,
       totalSize,
       complexity,
-      maintainabilityIndex: componentFile ? this.calculateMaintainabilityIndex(componentFile.content) : 80,
-      duplicateLines: componentFile ? this.findDuplicateLines(componentFile.content) : 0,
+      maintainabilityIndex,
+      duplicateLines,
       generationTime: Date.now() - startTime
     };
   }
