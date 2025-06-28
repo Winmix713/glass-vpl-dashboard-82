@@ -87,6 +87,22 @@ export class WorkerManager {
     });
   }
 
+  /**
+   * Process work in worker (alias for executeTask)
+   */
+  async processInWorker(workerName: string, payload: any): Promise<any> {
+    // Map worker names to task types
+    const taskTypeMap: Record<string, WorkerTask['type']> = {
+      'codeProcessingWorker': 'TRANSFORM_CODE',
+      'svgProcessingWorker': 'PARSE_SVG',
+      'codeOptimizationWorker': 'OPTIMIZE_CODE',
+      'validationWorker': 'VALIDATE_CODE'
+    };
+
+    const taskType = taskTypeMap[workerName] || 'TRANSFORM_CODE';
+    return this.executeTask(taskType, payload);
+  }
+
   terminate(): void {
     if (this.worker) {
       this.worker.terminate();

@@ -1,4 +1,3 @@
-
 import { memoryManager } from '@/utils/memoryManager';
 import { workerManager } from '@/utils/workerManager';
 import { aiDesignAnalyzer } from './aiDesignAnalyzer';
@@ -50,12 +49,77 @@ export class EnhancedCodeGenerationEngine {
   }
 
   /**
+   * Extract SVG content from Figma data
+   */
+  async extractSVGFromFigma(figmaData: any): Promise<string> {
+    try {
+      // Simple SVG extraction from Figma data
+      if (figmaData?.document?.children) {
+        // Generate a basic SVG representation
+        const width = 400;
+        const height = 300;
+        
+        let svgContent = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+        
+        // Extract basic shapes from Figma nodes
+        const extractShapes = (nodes: any[], offsetX = 0, offsetY = 0): string => {
+          let shapes = '';
+          
+          nodes.forEach(node => {
+            if (node.absoluteBoundingBox) {
+              const { x, y, width: w, height: h } = node.absoluteBoundingBox;
+              
+              switch (node.type) {
+                case 'RECTANGLE':
+                  shapes += `<rect x="${x + offsetX}" y="${y + offsetY}" width="${w}" height="${h}" fill="#f0f0f0" stroke="#ccc" stroke-width="1"/>`;
+                  break;
+                case 'ELLIPSE':
+                  const cx = x + w / 2;
+                  const cy = y + h / 2;
+                  shapes += `<ellipse cx="${cx + offsetX}" cy="${cy + offsetY}" rx="${w / 2}" ry="${h / 2}" fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>`;
+                  break;
+                case 'TEXT':
+                  shapes += `<text x="${x + offsetX}" y="${y + offsetY + 16}" font-family="Arial, sans-serif" font-size="14" fill="#333">${node.characters || 'Text'}</text>`;
+                  break;
+              }
+            }
+            
+            if (node.children) {
+              shapes += extractShapes(node.children, offsetX, offsetY);
+            }
+          });
+          
+          return shapes;
+        };
+        
+        svgContent += extractShapes(figmaData.document.children);
+        svgContent += '</svg>';
+        
+        return svgContent;
+      }
+      
+      // Fallback SVG
+      return `<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+        <rect x="50" y="50" width="300" height="200" fill="#f0f0f0" stroke="#ccc" stroke-width="2" rx="8"/>
+        <text x="200" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#666">Generated from Figma</text>
+      </svg>`;
+      
+    } catch (error) {
+      console.error('SVG extraction error:', error);
+      return `<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="380" height="280" fill="none" stroke="#ddd" stroke-width="1"/>
+        <text x="200" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#999">SVG Generation Error</text>
+      </svg>`;
+    }
+  }
+
+  /**
    * Main entry point for code generation
    */
   async generateCode(
     figmaData: any,
     config: CodeGenerationConfig,
-    userPreferences?: Record<string, any>
+    progressCallback?: (progress: number, status: string) => void
   ): Promise<GeneratedCode> {
     const sessionId = this.generateSessionId();
     const startTime = Date.now();
@@ -65,7 +129,6 @@ export class EnhancedCodeGenerationEngine {
       sessionId,
       startTime,
       config,
-      userPreferences,
       figmaData
     };
 
@@ -74,35 +137,37 @@ export class EnhancedCodeGenerationEngine {
     try {
       // Phase 1: Design Analysis
       console.log(`[${sessionId}] Starting design analysis...`);
+      progressCallback?.(10, 'Analyzing design...');
       const designAnalysis = await aiDesignAnalyzer.analyzeFigmaDesign(figmaData, config);
 
       // Phase 2: Code Structure Planning
       console.log(`[${sessionId}] Planning code structure...`);
+      progressCallback?.(30, 'Planning structure...');
       const structure = await this.planCodeStructure(designAnalysis, config);
 
       // Phase 3: Component Generation
       console.log(`[${sessionId}] Generating components...`);
+      progressCallback?.(50, 'Generating components...');
       const components = await this.generateComponents(designAnalysis, structure, config);
 
       // Phase 4: Framework Adaptation
       console.log(`[${sessionId}] Adapting to target framework...`);
+      progressCallback?.(70, 'Adapting framework...');
       const adaptedCode = await frameworkAdapter.adaptToFramework(
         components.jsx,
         components.css,
         config
       );
 
-      // Phase 5: Quality Assessment
+      // Phase 5: Quality Assessment  
       console.log(`[${sessionId}] Assessing code quality...`);
+      progressCallback?.(85, 'Assessing quality...');
       const quality = await this.performQualityAssessment(adaptedCode, config);
 
-      // Phase 6: Optimization
-      console.log(`[${sessionId}] Optimizing code...`);
-      const optimized = await this.optimizeCode(adaptedCode, config, quality);
-
-      // Phase 7: Final Assembly
+      // Phase 6: Final Assembly
       console.log(`[${sessionId}] Assembling final code...`);
-      const finalCode = await this.assembleFinalCode(optimized, structure, config);
+      progressCallback?.(95, 'Finalizing...');
+      const finalCode = await this.assembleFinalCode(adaptedCode, structure, config);
 
       // Calculate metrics
       const metrics = this.calculateMetrics(finalCode, startTime);
@@ -128,9 +193,10 @@ export class EnhancedCodeGenerationEngine {
       };
 
       // Cache the result
-      await memoryManager.store(`generation-${sessionId}`, result);
+      await memoryManager.set(`generation-${sessionId}`, result);
 
       console.log(`[${sessionId}] Code generation completed successfully`);
+      progressCallback?.(100, 'Complete!');
       return result;
 
     } catch (error) {
@@ -141,284 +207,6 @@ export class EnhancedCodeGenerationEngine {
     }
   }
 
-  /**
-   * Plan the overall code structure based on design analysis
-   */
-  private async planCodeStructure(
-    designAnalysis: any,
-    config: CodeGenerationConfig
-  ): Promise<ProjectStructure> {
-    const componentCount = designAnalysis.components?.length || 1;
-    const hasComplexInteractions = designAnalysis.interactions?.length > 0;
-    const hasAnimations = designAnalysis.animations?.length > 0;
-
-    return {
-      root: 'src',
-      components: this.generateComponentPaths(designAnalysis.components || []),
-      hooks: hasComplexInteractions ? ['useInteraction.ts', 'useAnimation.ts'] : [],
-      utils: ['helpers.ts', 'constants.ts'],
-      types: config.typescript ? ['index.ts', 'components.ts'] : [],
-      styles: this.generateStylePaths(config.styling),
-      tests: config.testing.unitTests ? ['__tests__/'] : [],
-      assets: designAnalysis.assets?.map((asset: any) => asset.name) || []
-    };
-  }
-
-  /**
-   * Generate React components from design analysis
-   */
-  private async generateComponents(
-    designAnalysis: any,
-    structure: ProjectStructure,
-    config: CodeGenerationConfig
-  ): Promise<{ jsx: string; css: string }> {
-    // Use web worker for intensive processing
-    const processingResult = await workerManager.processInWorker('codeProcessingWorker', {
-      type: 'generateComponents',
-      data: {
-        designAnalysis,
-        structure,
-        config
-      }
-    });
-
-    return {
-      jsx: processingResult.jsx || this.generateFallbackJSX(config),
-      css: processingResult.css || this.generateFallbackCSS(config)
-    };
-  }
-
-  /**
-   * Perform comprehensive quality assessment
-   */
-  private async performQualityAssessment(
-    code: any,
-    config: CodeGenerationConfig
-  ): Promise<QualityAssessment> {
-    const codeString = typeof code.componentCode === 'string' ? code.componentCode : '';
-    const codeLength = codeString.length;
-    
-    // Basic quality metrics
-    const hasTypeScript = config.typescript && codeString.includes('interface');
-    const hasAccessibility = /aria-|role=|alt=/.test(codeString);
-    const hasResponsive = /@media|rem|em|%/.test(code.styleCode || '');
-    const hasTests = config.testing.unitTests;
-    const hasComments = /\/\*|\/\//.test(codeString);
-
-    const categories = {
-      visual: this.calculateVisualScore(code),
-      code: this.calculateCodeScore(codeString, config),
-      performance: this.calculatePerformanceScore(code, config),
-      accessibility: hasAccessibility ? 95 : 60,
-      maintainability: (hasComments ? 40 : 20) + (hasTypeScript ? 30 : 10) + (hasTests ? 30 : 0),
-      security: this.calculateSecurityScore(codeString)
-    };
-
-    const overall = Object.values(categories).reduce((sum, score) => sum + score, 0) / Object.keys(categories).length;
-
-    const issues = [];
-    const recommendations = [];
-
-    if (!hasAccessibility) {
-      issues.push({
-        level: 'warning' as const,
-        message: 'Missing accessibility attributes',
-        category: 'accessibility' as const
-      });
-    }
-
-    if (!hasTypeScript && config.typescript) {
-      recommendations.push('Enable TypeScript for better type safety');
-    }
-
-    if (!hasResponsive) {
-      recommendations.push('Add responsive design patterns');
-    }
-
-    return {
-      overall,
-      categories,
-      issues,
-      recommendations
-    };
-  }
-
-  /**
-   * Optimize the generated code
-   */
-  private async optimizeCode(
-    code: any,
-    config: CodeGenerationConfig,
-    quality: QualityAssessment
-  ): Promise<any> {
-    const optimizations = [];
-    let optimizedCode = { ...code };
-
-    // Tree shaking optimization
-    if (config.optimization.treeshaking) {
-      optimizedCode = await this.performTreeShaking(optimizedCode);
-      optimizations.push('Tree shaking applied');
-    }
-
-    // Bundle splitting
-    if (config.optimization.codesplitting) {
-      optimizedCode = await this.applySplitting(optimizedCode);
-      optimizations.push('Code splitting applied');
-    }
-
-    // Accessibility improvements
-    if (quality.categories.accessibility < 80) {
-      optimizedCode = await this.enhanceAccessibility(optimizedCode);
-      optimizations.push('Accessibility enhancements added');
-    }
-
-    // Performance optimizations
-    if (quality.categories.performance < 80) {
-      optimizedCode = await this.optimizePerformance(optimizedCode);
-      optimizations.push('Performance optimizations applied');
-    }
-
-    return {
-      ...optimizedCode,
-      optimizations
-    };
-  }
-
-  /**
-   * Assemble the final code package
-   */
-  private async assembleFinalCode(
-    optimizedCode: any,
-    structure: ProjectStructure,
-    config: CodeGenerationConfig
-  ): Promise<{
-    files: CodeFile[];
-    structure: ProjectStructure;
-    preview: string;
-  }> {
-    const files: CodeFile[] = [];
-
-    // Main component file
-    files.push({
-      path: `${structure.root}/components/GeneratedComponent.${config.typescript ? 'tsx' : 'jsx'}`,
-      name: `GeneratedComponent.${config.typescript ? 'tsx' : 'jsx'}`,
-      extension: config.typescript ? '.tsx' : '.jsx',
-      content: optimizedCode.componentCode || '',
-      size: new Blob([optimizedCode.componentCode || '']).size,
-      language: config.typescript ? 'typescript' : 'javascript',
-      imports: this.extractImports(optimizedCode.componentCode || ''),
-      exports: ['GeneratedComponent'],
-      dependencies: optimizedCode.template?.dependencies || []
-    });
-
-    // Style file
-    if (optimizedCode.styleCode) {
-      const styleExtension = config.styling === 'scss' ? '.scss' : '.css';
-      files.push({
-        path: `${structure.root}/styles/GeneratedComponent${styleExtension}`,
-        name: `GeneratedComponent${styleExtension}`,
-        extension: styleExtension,
-        content: optimizedCode.styleCode,
-        size: new Blob([optimizedCode.styleCode]).size,
-        language: config.styling === 'scss' ? 'scss' : 'css',
-        imports: [],
-        exports: [],
-        dependencies: []
-      });
-    }
-
-    // Additional files
-    Object.entries(optimizedCode.additionalFiles || {}).forEach(([filename, content]) => {
-      if (typeof content === 'string') {
-        files.push({
-          path: `${structure.root}/${filename}`,
-          name: filename,
-          extension: filename.substring(filename.lastIndexOf('.')),
-          content,
-          size: new Blob([content]).size,
-          language: this.detectLanguage(filename),
-          imports: this.extractImports(content),
-          exports: this.extractExports(content),
-          dependencies: []
-        });
-      }
-    });
-
-    return {
-      files,
-      structure,
-      preview: this.generatePreview(optimizedCode.componentCode || '')
-    };
-  }
-
-  /**
-   * Calculate comprehensive metrics
-   */
-  private calculateMetrics(finalCode: any, startTime: number): CodeMetrics {
-    const totalContent = finalCode.files.reduce((acc: string, file: CodeFile) => acc + file.content, '');
-    const linesOfCode = totalContent.split('\n').length;
-    const totalSize = finalCode.files.reduce((acc: number, file: CodeFile) => acc + file.size, 0);
-
-    return {
-      linesOfCode,
-      complexity: this.calculateComplexity(totalContent),
-      maintainabilityIndex: this.calculateMaintainabilityIndex(totalContent),
-      duplicateLines: this.findDuplicateLines(totalContent),
-      testCoverage: 0, // Would need actual test execution
-      bundleSize: totalSize,
-      loadTime: Date.now() - startTime,
-      performanceScore: this.calculatePerformanceScore(finalCode, { optimization: { treeshaking: true, bundleAnalysis: true, codesplitting: true, lazyLoading: true } } as CodeGenerationConfig)
-    };
-  }
-
-  /**
-   * Validate build configuration
-   */
-  private async validateBuild(finalCode: any, config: CodeGenerationConfig): Promise<BuildLog[]> {
-    const logs: BuildLog[] = [];
-    const timestamp = new Date();
-
-    // Check for common issues
-    finalCode.files.forEach((file: CodeFile) => {
-      // Check for missing imports
-      const imports = this.extractImports(file.content);
-      const missingImports = this.findMissingImports(file.content, imports);
-      
-      missingImports.forEach(missing => {
-        logs.push({
-          timestamp,
-          level: 'warn',
-          message: `Potentially missing import: ${missing}`,
-          file: file.name
-        });
-      });
-
-      // Check for TypeScript issues
-      if (config.typescript && file.extension === '.tsx') {
-        const tsIssues = this.validateTypeScript(file.content);
-        tsIssues.forEach(issue => {
-          logs.push({
-            timestamp,
-            level: 'error',
-            message: issue,
-            file: file.name
-          });
-        });
-      }
-    });
-
-    if (logs.length === 0) {
-      logs.push({
-        timestamp,
-        level: 'info',
-        message: 'Build validation completed successfully'
-      });
-    }
-
-    return logs;
-  }
-
-  // Helper methods
   private generateSessionId(): string {
     return `gen_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
@@ -676,11 +464,136 @@ export default GeneratedComponent;`;
     return issues;
   }
 
-  private initializePerformanceMonitoring(): void {
-    // Performance monitoring setup
-    if (typeof performance !== 'undefined') {
-      this.performanceMetrics.set('initialized', Date.now());
+  /**
+   * Plan the overall code structure based on design analysis
+   */
+  private async planCodeStructure(
+    designAnalysis: any,
+    config: CodeGenerationConfig
+  ): Promise<ProjectStructure> {
+    const componentCount = designAnalysis.components?.length || 1;
+    const hasComplexInteractions = designAnalysis.interactions?.length > 0;
+    const hasAnimations = designAnalysis.animations?.length > 0;
+
+    return {
+      root: 'src',
+      components: this.generateComponentPaths(designAnalysis.components || []),
+      hooks: hasComplexInteractions ? ['useInteraction.ts', 'useAnimation.ts'] : [],
+      utils: ['helpers.ts', 'constants.ts'],
+      types: config.typescript ? ['index.ts', 'components.ts'] : [],
+      styles: this.generateStylePaths(config.styling),
+      tests: config.testing.unitTests ? ['__tests__/'] : [],
+      assets: designAnalysis.assets?.map((asset: any) => asset.name) || []
+    };
+  }
+
+  /**
+   * Generate React components from design analysis
+   */
+  private async generateComponents(
+    designAnalysis: any,
+    structure: ProjectStructure,
+    config: CodeGenerationConfig
+  ): Promise<{ jsx: string; css: string }> {
+    // Use web worker for intensive processing
+    const processingResult = await workerManager.executeTask('TRANSFORM_CODE', {
+      type: 'generateComponents',
+      data: {
+        designAnalysis,
+        structure,
+        config
+      }
+    });
+
+    return {
+      jsx: processingResult.jsx || this.generateFallbackJSX(config),
+      css: processingResult.css || this.generateFallbackCSS(config)
+    };
+  }
+
+  /**
+   * Perform comprehensive quality assessment
+   */
+  private async performQualityAssessment(
+    code: any,
+    config: CodeGenerationConfig
+  ): Promise<QualityAssessment> {
+    const codeString = typeof code.componentCode === 'string' ? code.componentCode : '';
+    const codeLength = codeString.length;
+    
+    // Basic quality metrics
+    const hasTypeScript = config.typescript && codeString.includes('interface');
+    const hasAccessibility = /aria-|role=|alt=/.test(codeString);
+    const hasResponsive = /@media|rem|em|%/.test(code.styleCode || '');
+    const hasTests = config.testing.unitTests;
+    const hasComments = /\/\*|\/\//.test(codeString);
+
+    const categories = {
+      visual: this.calculateVisualScore(code),
+      code: this.calculateCodeScore(codeString, config),
+      performance: this.calculatePerformanceScore(code, config),
+      accessibility: hasAccessibility ? 95 : 60,
+      maintainability: (hasComments ? 40 : 20) + (hasTypeScript ? 30 : 10) + (hasTests ? 30 : 0),
+      security: this.calculateSecurityScore(codeString)
+    };
+
+    const overall = Object.values(categories).reduce((sum, score) => sum + score, 0) / Object.keys(categories).length;
+
+    const issues = [];
+    const recommendations = [];
+
+    if (!hasAccessibility) {
+      issues.push({
+        level: 'warning' as const,
+        message: 'Missing accessibility attributes',
+        category: 'accessibility' as const
+      });
     }
+
+    if (!hasTypeScript && config.typescript) {
+      recommendations.push('Enable TypeScript for better type safety');
+    }
+
+    if (!hasResponsive) {
+      recommendations.push('Add responsive design patterns');
+    }
+
+    return {
+      overall,
+      categories,
+      issues,
+      recommendations,
+      aiSuggestions: recommendations
+    };
+  }
+
+  private async performTreeShaking(code: any): Promise<any> {
+    // Placeholder implementation
+    return code;
+  }
+
+  private async applySplitting(code: any): Promise<any> {
+    // Placeholder implementation
+    return code;
+  }
+
+  private async enhanceAccessibility(code: any): Promise<any> {
+    // Add ARIA labels and semantic HTML
+    if (typeof code.componentCode === 'string') {
+      code.componentCode = code.componentCode
+        .replace(/<div>/g, '<div role="main">')
+        .replace(/<button([^>]*)>/g, '<button$1 aria-label="Generated button">');
+    }
+    return code;
+  }
+
+  private async optimizePerformance(code: any): Promise<any> {
+    // Add React.memo and other optimizations
+    if (typeof code.componentCode === 'string') {
+      code.componentCode = code.componentCode
+        .replace('const GeneratedComponent', 'const GeneratedComponent = React.memo(() =>');
+    }
+    return code;
   }
 }
 

@@ -38,6 +38,13 @@ export class MemoryManager {
     this.currentCacheSize += size;
   }
 
+  /**
+   * Store data in cache (alias for set method)
+   */
+  async store(key: string, data: any): Promise<void> {
+    this.set(key, data);
+  }
+
   get(key: string): any | null {
     const cached = this.cache.get(key);
     if (!cached) return null;
