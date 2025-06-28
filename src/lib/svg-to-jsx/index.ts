@@ -1,3 +1,4 @@
+
 /**
  * Enhanced SVG to JSX Converter with Large File Support
  * 10/10 Quality Implementation with svg-to-code-figma optimizations
@@ -17,19 +18,19 @@ import {
 } from './utils';
 
 /**
- * SVG Element representation
+ * SVG Element representation (renamed to avoid DOM conflict)
  */
-export interface SVGElement {
+export interface SVGElementData {
   tagName: string;
   attributes: Record<string, any>;
-  children: SVGElement[];
+  children: SVGElementData[];
   text?: string;
 }
 
 /**
- * Enhanced transformation options
+ * Enhanced transformation options (renamed to avoid conflict)
  */
-export interface TransformOptions {
+export interface SVGTransformOptions {
   passProps?: boolean;
   passChildren?: boolean;
   root?: string | null;
@@ -44,9 +45,9 @@ export interface TransformOptions {
 }
 
 /**
- * Enhanced conversion result with performance metrics
+ * Enhanced conversion result with performance metrics (renamed to avoid conflict)
  */
-export interface ConversionResult {
+export interface SVGConversionResult {
   jsx: string;
   metadata: {
     elementCount: number;
@@ -66,7 +67,7 @@ export interface ConversionResult {
 /**
  * Default options with large file support
  */
-const DEFAULT_OPTIONS: Required<TransformOptions> = {
+const DEFAULT_OPTIONS: Required<SVGTransformOptions> = {
   passProps: false,
   passChildren: false,
   root: null,
@@ -85,8 +86,8 @@ const DEFAULT_OPTIONS: Required<TransformOptions> = {
  */
 export async function svgToJsx(
   svg: string, 
-  options: TransformOptions = {}
-): Promise<ConversionResult> {
+  options: SVGTransformOptions = {}
+): Promise<SVGConversionResult> {
   const startTime = performance.now();
   const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
   const warnings: string[] = [];
@@ -180,7 +181,7 @@ export async function svgToJsx(
 /**
  * Standard SVG processing for smaller files
  */
-async function processStandardSvg(svg: string, options: Required<TransformOptions>): Promise<string> {
+async function processStandardSvg(svg: string, options: Required<SVGTransformOptions>): Promise<string> {
   // Basic SVG to JSX conversion
   let jsx = svg
     .replace(/class=/g, 'className=')
@@ -232,7 +233,7 @@ function createFallbackJSX(errorMessage: string, componentName: string): string 
 /**
  * Synchronous version for simple use cases
  */
-export function svgToJsxSync(svg: string, options: TransformOptions = {}): string {
+export function svgToJsxSync(svg: string, options: SVGTransformOptions = {}): string {
   const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
   
   try {
@@ -297,8 +298,8 @@ export function validateSVG(svg: string): { valid: boolean; errors: string[]; wa
   };
 }
 
-// Export types
-export type { SVGElement, TransformOptions, ConversionResult };
+// Export renamed types to avoid conflicts
+export type { SVGElementData, SVGTransformOptions, SVGConversionResult };
 
 // Default export
 export default svgToJsx;

@@ -1,3 +1,4 @@
+
 /**
  * Enhanced Error Handler with React Hooks Support
  * Fixed for Vite React SWC plugin compatibility
@@ -217,8 +218,9 @@ export function withErrorBoundary<P extends Record<string, unknown>>(
 ) {
   const WithErrorBoundaryComponent = (props: P) => {
     return React.createElement(ErrorBoundary, {
-      fallback: FallbackComponent
-    }, React.createElement(WrappedComponent, props));
+      fallback: FallbackComponent,
+      children: React.createElement(WrappedComponent, props)
+    });
   };
 
   WithErrorBoundaryComponent.displayName = `withErrorBoundary(${WrappedComponent.displayName || WrappedComponent.name})`;

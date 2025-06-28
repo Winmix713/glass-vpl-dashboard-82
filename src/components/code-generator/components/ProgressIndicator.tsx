@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -53,13 +54,6 @@ export const ProgressIndicator: React.FC = () => {
       default:
         return <div className="w-4 h-4 rounded-full border-2 border-gray-600" />;
     }
-  };
-
-  // Get progress color
-  const getProgressColor = () => {
-    if (hasErrors) return 'bg-red-500';
-    if (allCompleted) return 'bg-green-500';
-    return 'bg-blue-500';
   };
 
   return (
@@ -120,18 +114,10 @@ export const ProgressIndicator: React.FC = () => {
               <span className="text-gray-300">Overall Progress</span>
               <span className="text-gray-400">{Math.round(progressPercentage)}%</span>
             </div>
-            <div className="relative">
-              <Progress 
-                value={progressPercentage} 
-                className="h-3"
-              />
-              {/* Custom progress bar styling */}
-              <style jsx>{`
-                .progress-bar {
-                  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
-                }
-              `}</style>
-            </div>
+            <Progress 
+              value={progressPercentage} 
+              className="h-3"
+            />
           </div>
 
           {/* Step Status Grid */}

@@ -1,4 +1,3 @@
-
 import { CodeGenerationConfig } from '@/types/code-generation';
 
 export interface FrameworkTemplate {
@@ -39,6 +38,7 @@ export class FrameworkAdapter {
         return this.adaptToAngular(jsxCode, cssCode, config);
       case 'svelte':
         return this.adaptToSvelte(jsxCode, cssCode, config);
+      case 'react':
       default:
         return this.adaptToReact(jsxCode, cssCode, config);
     }
@@ -48,10 +48,10 @@ export class FrameworkAdapter {
     const componentName = 'GeneratedComponent';
     
     // Convert JSX to Vue template
-    const template = this.convertJSXToVueTemplate(jsxCode);
+    const vueTemplate = this.convertJSXToVueTemplate(jsxCode);
     
     const componentCode = `<template>
-${template}
+${vueTemplate}
 </template>
 
 <script ${config.typescript ? 'lang="ts"' : ''}>
@@ -77,7 +77,7 @@ export default defineComponent({
 ${cssCode}
 </style>`;
 
-    const template: FrameworkTemplate = {
+    const frameworkTemplate: FrameworkTemplate = {
       name: 'Vue',
       extension: '.vue',
       dependencies: ['vue@^3.3.0'],
@@ -95,7 +95,7 @@ ${cssCode}
       componentCode,
       styleCode: cssCode,
       additionalFiles: {},
-      template
+      template: frameworkTemplate
     };
   }
 
@@ -104,14 +104,14 @@ ${cssCode}
     const selector = 'app-generated';
     
     // Convert JSX to Angular template
-    const template = this.convertJSXToAngularTemplate(jsxCode);
+    const angularTemplate = this.convertJSXToAngularTemplate(jsxCode);
     
     const componentCode = `import { Component, Input } from '@angular/core';
 
 @Component({
   selector: '${selector}',
   template: \`
-${template}
+${angularTemplate}
   \`,
   styleUrls: ['./${componentName.toLowerCase()}.component.${config.styling === 'scss' ? 'scss' : 'css'}']
 })
@@ -130,7 +130,7 @@ import { ${componentName}Component } from './${componentName.toLowerCase()}.comp
 })
 export class ${componentName}Module {}`;
 
-    const template: FrameworkTemplate = {
+    const angularFrameworkTemplate: FrameworkTemplate = {
       name: 'Angular',
       extension: '.component.ts',
       dependencies: [
@@ -153,7 +153,7 @@ export class ${componentName}Module {}`;
       additionalFiles: {
         [`${componentName.toLowerCase()}.module.ts`]: moduleCode
       },
-      template
+      template: angularFrameworkTemplate
     };
   }
 
@@ -161,19 +161,19 @@ export class ${componentName}Module {}`;
     const componentName = 'GeneratedComponent';
     
     // Convert JSX to Svelte template
-    const template = this.convertJSXToSvelteTemplate(jsxCode);
+    const svelteTemplate = this.convertJSXToSvelteTemplate(jsxCode);
     
     const componentCode = `<script ${config.typescript ? 'lang="ts"' : ''}>
   export let className = '';
 </script>
 
-${template}
+${svelteTemplate}
 
 <style>
 ${cssCode}
 </style>`;
 
-    const template: FrameworkTemplate = {
+    const svelteFrameworkTemplate: FrameworkTemplate = {
       name: 'Svelte',
       extension: '.svelte',
       dependencies: ['svelte@^4.0.0'],
@@ -194,7 +194,7 @@ ${cssCode}
       componentCode,
       styleCode: cssCode,
       additionalFiles: {},
-      template
+      template: svelteFrameworkTemplate
     };
   }
 
@@ -218,7 +218,7 @@ ${jsxCode}
 
 export default ${componentName};`;
 
-    const template: FrameworkTemplate = {
+    const reactFrameworkTemplate: FrameworkTemplate = {
       name: 'React',
       extension,
       dependencies: ['react@^18.2.0', 'react-dom@^18.2.0'],
@@ -236,7 +236,7 @@ export default ${componentName};`;
       componentCode,
       styleCode: cssCode,
       additionalFiles: {},
-      template
+      template: reactFrameworkTemplate
     };
   }
 
