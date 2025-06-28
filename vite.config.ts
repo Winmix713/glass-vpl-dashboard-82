@@ -1,5 +1,4 @@
 
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -20,22 +19,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    target: 'esnext',
-    sourcemap: mode === 'development',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          utils: ['clsx', 'tailwind-merge']
-        }
-      }
-    },
-    chunkSizeWarningLimit: 1000
-  },
-  optimizeDeps: {
-    include: ['react-syntax-highlighter/dist/esm/styles/prism']
-  }
 }));
-
