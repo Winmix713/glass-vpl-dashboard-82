@@ -5,6 +5,38 @@ import { svgToJsx } from '@/lib/svg-to-jsx';
 import { transformer } from '@/lib/transform';
 
 // Types
+export interface FigmaFileItem {
+  id: string;
+  name: string;
+  url: string;
+  status: 'idle' | 'loading' | 'success' | 'error';
+  figmaData?: any;
+  svgCode?: string;
+  generatedTsxCode?: string;
+  cssCode?: string;
+  jsxCode?: string;
+  moreCssCode?: string;
+  finalTsxCode?: string;
+  finalCssCode?: string;
+  error?: string;
+  progress: number;
+  processingTime?: number;
+}
+
+export interface BatchProcessingState {
+  isActive: boolean;
+  mode: 'single' | 'batch';
+  files: FigmaFileItem[];
+  currentFileIndex: number;
+  totalProgress: number;
+  successCount: number;
+  errorCount: number;
+  completedFiles: string[];
+  failedFiles: string[];
+  startTime?: number;
+  endTime?: number;
+}
+
 export interface StepData {
   figmaUrl: string;
   accessToken: string;
@@ -16,6 +48,8 @@ export interface StepData {
   moreCssCode: string;
   finalTsxCode: string;
   finalCssCode: string;
+  // Multi-file support
+  batchProcessing: BatchProcessingState;
 }
 
 export interface StepStatus {
@@ -56,7 +90,17 @@ type FigmaStepsAction =
   | { type: 'CLEAR_ERRORS' }
   | { type: 'TOGGLE_BLOCK'; payload: keyof UIState['expandedBlocks'] }
   | { type: 'SET_PROGRESS'; payload: Partial<UIState['progress']> }
-  | { type: 'RESET_ALL' };
+  | { type: 'RESET_ALL' }
+  // Multi-file actions
+  | { type: 'ADD_FIGMA_FILE'; payload: { url: string; name?: string } }
+  | { type: 'REMOVE_FIGMA_FILE'; payload: string }
+  | { type: 'UPDATE_FILE_STATUS'; payload: { id: string; status: FigmaFileItem['status']; error?: string } }
+  | { type: 'UPDATE_FILE_DATA'; payload: { id: string; data: Partial<FigmaFileItem> } }
+  | { type: 'SET_BATCH_MODE'; payload: 'single' | 'batch' }
+  | { type: 'START_BATCH_PROCESSING' }
+  | { type: 'STOP_BATCH_PROCESSING' }
+  | { type: 'UPDATE_BATCH_PROGRESS'; payload: Partial<BatchProcessingState> }
+  | { type: 'RESET_BATCH_PROCESSING' };
 
 // Initial State
 const initialState: FigmaStepsState = {
@@ -70,7 +114,18 @@ const initialState: FigmaStepsState = {
     jsxCode: '',
     moreCssCode: '',
     finalTsxCode: '',
-    finalCssCode: ''
+    finalCssCode: '',
+    batchProcessing: {
+      isActive: false,
+      mode: 'single',
+      files: [],
+      currentFileIndex: 0,
+      totalProgress: 0,
+      successCount: 0,
+      errorCount: 0,
+      completedFiles: [],
+      failedFiles: []
+    }
   },
   stepStatus: {
     step1: 'idle',
@@ -155,6 +210,144 @@ function figmaStepsReducer(state: FigmaStepsState, action: FigmaStepsAction): Fi
     case 'RESET_ALL':
       return initialState;
     
+    // Multi-file actions
+    case 'ADD_FIGMA_FILE':
+      const newFile: FigmaFileItem = {
+        id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: action.payload.name || `Figma File ${state.stepData.batchProcessing.files.length + 1}`,
+        url: action.payload.url,
+        status: 'idle',
+        progress: 0
+      };
+      return {
+        ...state,
+        stepData: {
+          ...state.stepData,
+          batchProcessing: {
+            ...state.stepData.batchProcessing,
+            files: [...state.stepData.batchProcessing.files, newFile]
+          }
+        }
+      };
+    
+    case 'REMOVE_FIGMA_FILE':
+      return {
+        ...state,
+        stepData: {
+          ...state.stepData,
+          batchProcessing: {
+            ...state.stepData.batchProcessing,
+            files: state.stepData.batchProcessing.files.filter(file => file.id !== action.payload)
+          }
+        }
+      };
+    
+    case 'UPDATE_FILE_STATUS':
+      return {
+        ...state,
+        stepData: {
+          ...state.stepData,
+          batchProcessing: {
+            ...state.stepData.batchProcessing,
+            files: state.stepData.batchProcessing.files.map(file =>
+              file.id === action.payload.id
+                ? { ...file, status: action.payload.status, error: action.payload.error }
+                : file
+            )
+          }
+        }
+      };
+    
+    case 'UPDATE_FILE_DATA':
+      return {
+        ...state,
+        stepData: {
+          ...state.stepData,
+          batchProcessing: {
+            ...state.stepData.batchProcessing,
+            files: state.stepData.batchProcessing.files.map(file =>
+              file.id === action.payload.id
+                ? { ...file, ...action.payload.data }
+                : file
+            )
+          }
+        }
+      };
+    
+    case 'SET_BATCH_MODE':
+      return {
+        ...state,
+        stepData: {
+          ...state.stepData,
+          batchProcessing: {
+            ...state.stepData.batchProcessing,
+            mode: action.payload
+          }
+        }
+      };
+    
+    case 'START_BATCH_PROCESSING':
+      return {
+        ...state,
+        stepData: {
+          ...state.stepData,
+          batchProcessing: {
+            ...state.stepData.batchProcessing,
+            isActive: true,
+            startTime: Date.now(),
+            currentFileIndex: 0,
+            successCount: 0,
+            errorCount: 0,
+            completedFiles: [],
+            failedFiles: []
+          }
+        }
+      };
+    
+    case 'STOP_BATCH_PROCESSING':
+      return {
+        ...state,
+        stepData: {
+          ...state.stepData,
+          batchProcessing: {
+            ...state.stepData.batchProcessing,
+            isActive: false,
+            endTime: Date.now()
+          }
+        }
+      };
+    
+    case 'UPDATE_BATCH_PROGRESS':
+      return {
+        ...state,
+        stepData: {
+          ...state.stepData,
+          batchProcessing: {
+            ...state.stepData.batchProcessing,
+            ...action.payload
+          }
+        }
+      };
+    
+    case 'RESET_BATCH_PROCESSING':
+      return {
+        ...state,
+        stepData: {
+          ...state.stepData,
+          batchProcessing: {
+            isActive: false,
+            mode: 'single',
+            files: [],
+            currentFileIndex: 0,
+            totalProgress: 0,
+            successCount: 0,
+            errorCount: 0,
+            completedFiles: [],
+            failedFiles: []
+          }
+        }
+      };
+    
     default:
       return state;
   }
@@ -179,6 +372,17 @@ interface FigmaStepsContextType {
     saveCssCode: () => void;
     generateFinalCode: () => Promise<void>;
     downloadCode: () => void;
+    
+    // Multi-file Actions
+    addFigmaFile: (url: string, name?: string) => void;
+    removeFigmaFile: (id: string) => void;
+    updateFileStatus: (id: string, status: FigmaFileItem['status'], error?: string) => void;
+    updateFileData: (id: string, data: Partial<FigmaFileItem>) => void;
+    setBatchMode: (mode: 'single' | 'batch') => void;
+    startBatchProcessing: () => Promise<void>;
+    stopBatchProcessing: () => void;
+    updateBatchProgress: (progress: Partial<BatchProcessingState>) => void;
+    resetBatchProcessing: () => void;
   };
 }
 
@@ -580,6 +784,148 @@ ${additionalCss}
     return finalCss;
   };
 
+  // Multi-file Actions
+  const addFigmaFile = useCallback((url: string, name?: string) => {
+    dispatch({ type: 'ADD_FIGMA_FILE', payload: { url, name } });
+  }, []);
+
+  const removeFigmaFile = useCallback((id: string) => {
+    dispatch({ type: 'REMOVE_FIGMA_FILE', payload: id });
+  }, []);
+
+  const updateFileStatus = useCallback((id: string, status: FigmaFileItem['status'], error?: string) => {
+    dispatch({ type: 'UPDATE_FILE_STATUS', payload: { id, status, error } });
+  }, []);
+
+  const updateFileData = useCallback((id: string, data: Partial<FigmaFileItem>) => {
+    dispatch({ type: 'UPDATE_FILE_DATA', payload: { id, data } });
+  }, []);
+
+  const setBatchMode = useCallback((mode: 'single' | 'batch') => {
+    dispatch({ type: 'SET_BATCH_MODE', payload: mode });
+  }, []);
+
+  const stopBatchProcessing = useCallback(() => {
+    dispatch({ type: 'STOP_BATCH_PROCESSING' });
+  }, []);
+
+  const updateBatchProgress = useCallback((progress: Partial<BatchProcessingState>) => {
+    dispatch({ type: 'UPDATE_BATCH_PROGRESS', payload: progress });
+  }, []);
+
+  const resetBatchProcessing = useCallback(() => {
+    dispatch({ type: 'RESET_BATCH_PROCESSING' });
+  }, []);
+
+  const startBatchProcessing = useCallback(async () => {
+    const { files } = state.stepData.batchProcessing;
+    
+    if (files.length === 0) {
+      setError('step1', 'No files added for batch processing');
+      return;
+    }
+
+    dispatch({ type: 'START_BATCH_PROCESSING' });
+    
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const startTime = Date.now();
+        
+        updateBatchProgress({
+          currentFileIndex: i,
+          totalProgress: Math.round((i / files.length) * 100)
+        });
+
+        updateFileStatus(file.id, 'loading');
+        setProgress({ 
+          current: 1, 
+          message: `Processing file ${i + 1} of ${files.length}: ${file.name}` 
+        });
+
+        try {
+          // Extract file ID from URL
+          const validation = await figmaApiService.validateFigmaUrl(file.url);
+          if (!validation.valid || !validation.fileId) {
+            throw new Error(validation.error || 'Invalid Figma URL');
+          }
+
+          // Fetch Figma file data
+          const figmaFile = await figmaApiService.fetchFigmaFile(validation.fileId, state.stepData.accessToken);
+          const metadata = await figmaApiService.getFileMetadata(validation.fileId, state.stepData.accessToken);
+          const components = await figmaApiService.getFileComponents(validation.fileId, state.stepData.accessToken);
+          const styles = await figmaApiService.getFileStyles(validation.fileId, state.stepData.accessToken);
+
+          const completeData = {
+            file: figmaFile,
+            metadata,
+            components,
+            styles,
+            fileId: validation.fileId,
+            extractedAt: new Date().toISOString()
+          };
+
+          // Extract SVG
+          const svgContent = await enhancedCodeGenerationEngine.extractSVGFromFigma(figmaFile);
+          
+          // Convert to TSX
+          const tsxCode = await transformer(svgContent, {
+            framework: 'react',
+            typescript: true,
+            styling: 'css',
+            componentName: `Generated${file.name.replace(/[^a-zA-Z0-9]/g, '')}Component`,
+            passProps: true
+          });
+
+          const processingTime = Date.now() - startTime;
+
+          updateFileData(file.id, {
+            figmaData: completeData,
+            svgCode: svgContent,
+            generatedTsxCode: tsxCode,
+            processingTime,
+            progress: 100
+          });
+
+          updateFileStatus(file.id, 'success');
+          
+          updateBatchProgress({
+            successCount: state.stepData.batchProcessing.successCount + 1,
+            completedFiles: [...state.stepData.batchProcessing.completedFiles, file.id]
+          });
+
+        } catch (fileError) {
+          console.error(`Error processing file ${file.name}:`, fileError);
+          const errorMessage = fileError instanceof Error ? fileError.message : 'Unknown error';
+          
+          updateFileStatus(file.id, 'error', errorMessage);
+          updateBatchProgress({
+            errorCount: state.stepData.batchProcessing.errorCount + 1,
+            failedFiles: [...state.stepData.batchProcessing.failedFiles, file.id]
+          });
+        }
+      }
+
+      // Complete batch processing
+      updateBatchProgress({
+        totalProgress: 100,
+        currentFileIndex: files.length - 1
+      });
+
+      setProgress({ 
+        current: 1, 
+        message: `Batch processing completed: ${state.stepData.batchProcessing.successCount} successful, ${state.stepData.batchProcessing.errorCount} failed` 
+      });
+
+      dispatch({ type: 'STOP_BATCH_PROCESSING' });
+
+    } catch (error) {
+      console.error('Batch processing error:', error);
+      setError('step1', error instanceof Error ? error.message : 'Batch processing failed');
+      dispatch({ type: 'STOP_BATCH_PROCESSING' });
+    }
+  }, [state.stepData, updateFileStatus, updateFileData, updateBatchProgress, setError, setProgress]);
+
   const contextValue: FigmaStepsContextType = {
     state,
     actions: {
@@ -595,7 +941,17 @@ ${additionalCss}
       generateSvgCode,
       saveCssCode,
       generateFinalCode,
-      downloadCode
+      downloadCode,
+      // Multi-file actions
+      addFigmaFile,
+      removeFigmaFile,
+      updateFileStatus,
+      updateFileData,
+      setBatchMode,
+      startBatchProcessing,
+      stopBatchProcessing,
+      updateBatchProgress,
+      resetBatchProcessing
     }
   };
 
