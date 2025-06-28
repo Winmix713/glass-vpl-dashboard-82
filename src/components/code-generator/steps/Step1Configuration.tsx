@@ -17,11 +17,14 @@ import {
   Shield,
   Globe,
   Clock,
-  Database
+  Database,
+  Files,
+  FileText
 } from 'lucide-react';
 import { useFigmaSteps } from '@/contexts/FigmaStepsContext';
 import { getStatusIcon } from '../utils/statusUtils';
 import { errorHandler } from '../utils/errorHandler';
+import { MultiFigmaFileManager } from '../components/MultiFigmaFileManager';
 
 // Enhanced debounce with immediate execution option
 function debounce<T extends (...args: any[]) => any>(
@@ -411,8 +414,40 @@ export const Step1Configuration: React.FC = () => {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Connection Progress */}
-        {isLoading && (
+        {/* Mode Toggle */}
+        <div className="flex items-center justify-center p-1 bg-gray-700 rounded-lg">
+          <Button
+            variant={stepData.batchProcessing.mode === 'single' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => actions.setBatchMode('single')}
+            className="flex-1 h-8"
+            disabled={stepData.batchProcessing.isActive}
+          >
+            <FileText className="w-4 h-4 mr-1" />
+            Single File
+          </Button>
+          <Button
+            variant={stepData.batchProcessing.mode === 'batch' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => actions.setBatchMode('batch')}
+            className="flex-1 h-8"
+            disabled={stepData.batchProcessing.isActive}
+          >
+            <Files className="w-4 h-4 mr-1" />
+            Multi-File Batch
+          </Button>
+        </div>
+
+        {/* Multi-File Manager */}
+        {stepData.batchProcessing.mode === 'batch' && (
+          <MultiFigmaFileManager />
+        )}
+
+        {/* Single File Mode */}
+        {stepData.batchProcessing.mode === 'single' && (
+          <>
+            {/* Connection Progress */}
+            {isLoading && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-blue-400">Connecting to Figma...</span>
@@ -550,6 +585,8 @@ export const Step1Configuration: React.FC = () => {
 
         {/* Success Display */}
         {figmaDataDisplay}
+          </>
+        )}
       </CardContent>
     </Card>
   );

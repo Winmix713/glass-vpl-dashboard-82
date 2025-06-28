@@ -9,6 +9,7 @@ import { Step4FinalGeneration } from './steps/Step4FinalGeneration';
 import { ProgressIndicator } from './components/ProgressIndicator';
 import { SuccessSummary } from './components/SuccessSummary';
 import { PreviewPanel } from './components/PreviewPanel';
+import { BatchProgressIndicator } from './components/BatchProgressIndicator';
 
 /**
  * Main Generator Component (Internal)
@@ -16,7 +17,7 @@ import { PreviewPanel } from './components/PreviewPanel';
  */
 const GeneratorContent: React.FC = () => {
   const { state, actions } = useFigmaSteps();
-  const { stepStatus, uiState } = state;
+  const { stepStatus, uiState, stepData } = state;
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -75,6 +76,13 @@ const GeneratorContent: React.FC = () => {
 
         {/* Progress Indicator */}
         <ProgressIndicator />
+
+        {/* Batch Processing Indicator */}
+        {stepData.batchProcessing.mode === 'batch' && stepData.batchProcessing.files.length > 0 && (
+          <div className="mb-8">
+            <BatchProgressIndicator batchState={stepData.batchProcessing} />
+          </div>
+        )}
 
         {/* 4-Step Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

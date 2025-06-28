@@ -16,6 +16,9 @@ The latest addition to our code generation suite - a fully modular, context-driv
 - **🧪 Fully Tested**: Comprehensive unit and integration tests
 - **📱 Responsive Design**: Optimized for all device sizes
 - **♿ Accessibility**: WCAG 2.1 AA compliant
+- **📁 Multi-File Batch Processing**: Process multiple Figma files simultaneously with queue management
+- **⏱️ Performance Analytics**: Real-time processing metrics and estimated completion times
+- **🎛️ Flexible Processing Modes**: Toggle between single file and batch processing modes
 
 ## 🏗️ Architecture Overview
 
@@ -23,21 +26,23 @@ The latest addition to our code generation suite - a fully modular, context-driv
 ```
 ModularFigmaStepsGenerator/
 ├── contexts/
-│   └── FigmaStepsContext.tsx          # Central state management
+│   └── FigmaStepsContext.tsx          # Central state management with multi-file support
 ├── steps/
-│   ├── Step1Configuration.tsx         # Figma connection & config
+│   ├── Step1Configuration.tsx         # Figma connection & config with mode toggle
 │   ├── Step2SvgGeneration.tsx        # SVG extraction & conversion
 │   ├── Step3CssImplementation.tsx    # CSS input & validation
 │   └── Step4FinalGeneration.tsx      # Final code generation
 ├── components/
 │   ├── ProgressIndicator.tsx         # Progress tracking
 │   ├── SuccessSummary.tsx           # Results summary
-│   └── PreviewPanel.tsx             # Code preview
+│   ├── PreviewPanel.tsx             # Code preview
+│   ├── MultiFigmaFileManager.tsx    # Multi-file batch processing UI
+│   └── BatchProgressIndicator.tsx   # Real-time batch processing metrics
 ├── utils/
 │   ├── statusUtils.tsx              # Status icons & formatting
 │   ├── errorHandler.ts              # Centralized error handling
 │   └── asyncHandler.ts              # Async operations management
-└── ModularFigmaStepsGenerator.tsx    # Main component
+└── ModularFigmaStepsGenerator.tsx    # Main component with batch processing
 ```
 
 ### State Management
@@ -116,6 +121,35 @@ npm run test:coverage
 - Additional JSX and CSS input
 - Intelligent code combination
 - Final optimization and output
+
+### 📁 Multi-File Batch Processing
+
+The application now supports processing multiple Figma files simultaneously with advanced queue management and progress tracking.
+
+#### Key Features:
+- **🎛️ Processing Modes**: Toggle between single file and batch processing modes
+- **📋 File Queue Management**: Add/remove files with intuitive interface
+- **⚡ Parallel Processing**: Process multiple files with optimized performance
+- **📊 Real-time Analytics**: Live progress tracking with detailed metrics
+- **🎯 Individual File Status**: Track success/error status for each file
+- **⏱️ Time Estimation**: Intelligent time remaining calculations
+- **📈 Performance Metrics**: Average processing time and success rates
+- **🔄 Resume & Retry**: Pause/resume batch processing with error recovery
+
+#### How to Use:
+1. **Toggle to Batch Mode**: Click "Multi-File Batch" in Step 1
+2. **Add Files**: Enter Figma URLs and optional custom names
+3. **Configure Token**: Ensure your Personal Access Token is set
+4. **Start Processing**: Click "Start Batch" to begin queue processing
+5. **Monitor Progress**: Watch real-time progress and file status updates
+6. **Download Results**: Access all generated code files when complete
+
+#### Batch Processing UI Components:
+- **File Queue List**: Shows all files with status indicators
+- **Batch Progress Bar**: Overall completion percentage
+- **Current File Indicator**: Shows which file is being processed
+- **Statistics Dashboard**: Success/error counts and rates
+- **Performance Metrics**: Processing times and estimates
 
 ### Code Quality Features
 
