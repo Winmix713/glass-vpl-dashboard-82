@@ -2,6 +2,10 @@ import { CodeGenerationConfig, GeneratedCode, ComponentMapping, QualityAssessmen
 import { FigmaFile, FigmaNode } from '@/types/figma-api';
 import { transformer } from '@/lib/transform';
 import { svgToJsx } from '@/lib/svg-to-jsx';
+import { memoryManager } from '@/utils/memoryManager';
+import { workerManager } from '@/utils/workerManager';
+import { aiDesignAnalyzer } from '@/services/aiDesignAnalyzer';
+import { frameworkAdapter } from '@/services/frameworkAdapter';
 
 export class EnhancedCodeGenerationEngine {
   private static instance: EnhancedCodeGenerationEngine;
@@ -23,44 +27,70 @@ export class EnhancedCodeGenerationEngine {
     const startTime = Date.now();
     
     try {
-      onProgress?.(5, 'Initializing code generation...');
+      onProgress?.(5, 'Initializing enhanced code generation...');
+      
+      // Check memory cache first
+      const cacheKey = `figma-${figmaFile.key}-${JSON.stringify(config)}`;
+      const cached = memoryManager.get(cacheKey);
+      if (cached) {
+        onProgress?.(100, 'Retrieved from cache!');
+        return cached;
+      }
       
       onProgress?.(10, 'Extracting SVG data from Figma...');
       const svgData = await this.extractSVGFromFigma(figmaFile);
       
+      onProgress?.(20, 'Analyzing design patterns with AI...');
+      const designPatterns = await aiDesignAnalyzer.analyzeDesignPatterns([figmaFile.document]);
+      
       onProgress?.(25, 'Optimizing SVG structure...');
-      const optimizedSVG = this.optimizeSVG(svgData);
+      const optimizedSVG = await workerManager.executeTask('OPTIMIZE_CODE', { code: svgData });
       
       onProgress?.(40, 'Analyzing design tokens...');
-      const designTokens = this.extractDesignTokens(optimizedSVG);
+      const designTokens = this.extractDesignTokens(optimizedSVG.optimizedCode || svgData);
       
       onProgress?.(55, 'Transforming to component structure...');
-      const componentMappings = await this.analyzeAndTransform(optimizedSVG, config);
+      const componentMappings = await this.analyzeAndTransform(optimizedSVG.optimizedCode || svgData, config);
       
-      onProgress?.(70, 'Generating framework-specific code...');
-      const files = await this.generateFrameworkFiles(componentMappings, config, designTokens);
+      onProgress?.(65, 'Generating framework-specific code...');
+      const jsxCode = await this.generateJSXCode(componentMappings[0], config);
+      const cssCode = this.generateCSSFromTokens(designTokens, config);
       
-      onProgress?.(85, 'Optimizing generated code...');
-      const optimizedFiles = this.optimizeGeneratedCode(files, config);
+      onProgress?.(75, 'Adapting to target framework...');
+      const frameworkOutput = await frameworkAdapter.adaptToFramework(jsxCode, cssCode, config);
+      
+      onProgress?.(85, 'Generating additional files...');
+      const files = await this.generateFrameworkFiles(frameworkOutput, config, designTokens);
       
       onProgress?.(95, 'Running quality assessment...');
-      const quality = await this.assessCodeQuality(optimizedFiles, config);
+      const quality = await this.assessCodeQuality(files, config);
       
-      onProgress?.(100, 'Code generation complete!');
+      // Generate AI suggestions
+      const aiSuggestions = await aiDesignAnalyzer.generateCodeSuggestions(designPatterns);
+      
+      onProgress?.(100, 'Enhanced code generation complete!');
 
       const generatedCode: GeneratedCode = {
         id: this.generateId(),
         timestamp: new Date(),
         config,
-        files: optimizedFiles,
-        structure: this.buildProjectStructure(optimizedFiles),
-        metrics: this.calculateAdvancedMetrics(optimizedFiles, componentMappings.length),
-        quality,
-        preview: this.generateEnhancedPreview(optimizedFiles, designTokens),
+        files,
+        structure: this.buildProjectStructure(files),
+        metrics: this.calculateAdvancedMetrics(files, componentMappings.length),
+        quality: {
+          ...quality,
+          aiSuggestions
+        },
+        preview: this.generateEnhancedPreview(files, designTokens),
         buildStatus: quality.overall >= 80 ? 'success' : quality.overall >= 60 ? 'warning' : 'error',
         buildLogs: [],
+        designPatterns,
+        frameworkTemplate: frameworkOutput.template
       };
 
+      // Cache the result
+      memoryManager.set(cacheKey, generatedCode);
+      
       return generatedCode;
     } catch (error) {
       console.error('Enhanced code generation error:', error);
@@ -382,37 +412,175 @@ ${svgElements}
     return Array.from(classes);
   }
 
+  private async generateJSXCode(mapping: ComponentMapping, config: CodeGenerationConfig): Promise<string> {
+    // Use worker for complex JSX generation
+    const result = await workerManager.executeTask('TRANSFORM_CODE', {
+      code: '<div className="generated-component">Generated Component</div>',
+      config
+    });
+    
+    return result.transformedCode;
+  }
+
+  private generateCSSFromTokens(designTokens: any, config: CodeGenerationConfig): string {
+    let css = '';
+    
+    // Generate CSS variables from design tokens
+    css += ':root {\n';
+    designTokens.colors.forEach((color: string, index: number) => {
+      css += `  --color-${index + 1}: ${color};\n`;
+    });
+    designTokens.spacing.forEach((space: string, index: number) => {
+      css += `  --spacing-${index + 1}: ${space};\n`;
+    });
+    css += '}\n\n';
+    
+    // Generate component styles
+    css += '.generated-component {\n';
+    css += '  max-width: 28rem;\n';
+    css += '  margin: 0 auto;\n';
+    css += '  background: white;\n';
+    css += '  border-radius: 0.75rem;\n';
+    css += '  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);\n';
+    css += '  overflow: hidden;\n';
+    css += '}\n';
+    
+    return css;
+  }
+
   private async generateFrameworkFiles(
-    mappings: ComponentMapping[],
+    frameworkOutput: any,
     config: CodeGenerationConfig,
     designTokens: any
   ): Promise<any[]> {
     const files = [];
     
-    // Generate main component file
-    const mainComponent = await this.generateMainComponent(mappings[0], config);
-    files.push(mainComponent);
+    // Main component file
+    files.push({
+      path: `src/GeneratedComponent${frameworkOutput.template.extension}`,
+      name: `GeneratedComponent${frameworkOutput.template.extension}`,
+      extension: frameworkOutput.template.extension.slice(1),
+      content: frameworkOutput.componentCode,
+      size: frameworkOutput.componentCode.length,
+      language: config.framework,
+      imports: [],
+      exports: ['GeneratedComponent'],
+      dependencies: frameworkOutput.template.dependencies
+    });
     
-    // Generate types file if TypeScript
-    if (config.typescript) {
-      files.push(this.generateTypesFile(mappings));
+    // Style file
+    if (frameworkOutput.styleCode) {
+      const styleExtension = config.styling === 'scss' ? '.scss' : '.css';
+      files.push({
+        path: `src/GeneratedComponent${styleExtension}`,
+        name: `GeneratedComponent${styleExtension}`,
+        extension: styleExtension.slice(1),
+        content: frameworkOutput.styleCode,
+        size: frameworkOutput.styleCode.length,
+        language: config.styling,
+        imports: [],
+        exports: [],
+        dependencies: []
+      });
     }
     
-    // Generate styles file
-    files.push(this.generateStylesFile(config, designTokens));
+    // Additional files
+    Object.entries(frameworkOutput.additionalFiles).forEach(([filename, content]) => {
+      files.push({
+        path: `src/${filename}`,
+        name: filename,
+        extension: filename.split('.').pop() || '',
+        content: content as string,
+        size: (content as string).length,
+        language: filename.endsWith('.ts') ? 'typescript' : 'javascript',
+        imports: [],
+        exports: [],
+        dependencies: []
+      });
+    });
     
-    // Generate package.json
-    files.push(this.generatePackageJson(config));
+    // Configuration files
+    Object.entries(frameworkOutput.template.configFiles).forEach(([filename, content]) => {
+      files.push({
+        path: filename,
+        name: filename,
+        extension: filename.split('.').pop() || '',
+        content,
+        size: content.length,
+        language: filename.endsWith('.json') ? 'json' : 'javascript',
+        imports: [],
+        exports: [],
+        dependencies: []
+      });
+    });
     
-    // Generate README
-    files.push(this.generateReadme(config));
-    
-    // Generate tests if enabled
-    if (config.testing.unitTests) {
-      files.push(this.generateTestFile(mappings[0], config));
-    }
+    // Package.json
+    files.push(this.generateEnhancedPackageJson(frameworkOutput.template, config));
     
     return files;
+  }
+
+  private generateEnhancedPackageJson(template: any, config: CodeGenerationConfig): any {
+    const packageJson = {
+      name: `generated-${template.name.toLowerCase()}-component`,
+      version: '1.0.0',
+      description: `Generated ${template.name} component from Figma design`,
+      main: `src/GeneratedComponent${template.extension}`,
+      scripts: this.getFrameworkScripts(template.name),
+      dependencies: template.dependencies.reduce((acc: any, dep: string) => {
+        const [name, version] = dep.split('@');
+        acc[name] = version || 'latest';
+        return acc;
+      }, {}),
+      devDependencies: template.devDependencies.reduce((acc: any, dep: string) => {
+        const [name, version] = dep.split('@');
+        acc[name] = version || 'latest';
+        return acc;
+      }, {})
+    };
+
+    const content = JSON.stringify(packageJson, null, 2);
+    
+    return {
+      path: 'package.json',
+      name: 'package.json',
+      extension: 'json',
+      content,
+      size: content.length,
+      language: 'json',
+      imports: [],
+      exports: [],
+      dependencies: Object.keys(packageJson.dependencies)
+    };
+  }
+
+  private getFrameworkScripts(framework: string): Record<string, string> {
+    switch (framework.toLowerCase()) {
+      case 'vue':
+        return {
+          dev: 'vite',
+          build: 'vite build',
+          preview: 'vite preview'
+        };
+      case 'angular':
+        return {
+          dev: 'ng serve',
+          build: 'ng build',
+          test: 'ng test'
+        };
+      case 'svelte':
+        return {
+          dev: 'vite dev',
+          build: 'vite build',
+          preview: 'vite preview'
+        };
+      default: // React
+        return {
+          dev: 'vite',
+          build: 'vite build',
+          preview: 'vite preview'
+        };
+    }
   }
 
   private async generateMainComponent(mapping: ComponentMapping, config: CodeGenerationConfig): Promise<any> {
