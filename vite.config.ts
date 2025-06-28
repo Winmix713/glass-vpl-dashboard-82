@@ -1,4 +1,5 @@
 
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -21,7 +22,6 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     target: 'esnext',
-    minify: 'esbuild',
     sourcemap: mode === 'development',
     rollupOptions: {
       output: {
@@ -38,3 +38,4 @@ export default defineConfig(({ mode }) => ({
     include: ['react-syntax-highlighter/dist/esm/styles/prism']
   }
 }));
+
