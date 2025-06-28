@@ -1,5 +1,5 @@
 export interface CodeGenerationConfig {
-  framework: 'react' | 'vue' | 'angular' | 'html';
+  framework: 'react' | 'vue' | 'angular' | 'svelte' | 'html';
   typescript: boolean;
   styling: 'css' | 'scss' | 'tailwind' | 'styled-components';
   componentLibrary?: 'mui' | 'antd' | 'chakra' | 'custom';
@@ -48,6 +48,7 @@ export interface QualityAssessment {
   };
   issues: QualityIssue[];
   recommendations: string[];
+  aiSuggestions?: string[];
 }
 
 export interface QualityIssue {

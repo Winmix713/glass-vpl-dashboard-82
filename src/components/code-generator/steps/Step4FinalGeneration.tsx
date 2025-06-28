@@ -22,7 +22,8 @@ import {
   Rocket,
   Star,
   Target,
-  Gauge
+  Gauge,
+  Palette
 } from 'lucide-react';
 import { useFigmaSteps } from '@/contexts/FigmaStepsContext';
 import { getStatusIcon } from '../utils/statusUtils';

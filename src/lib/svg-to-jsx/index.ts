@@ -298,8 +298,5 @@ export function validateSVG(svg: string): { valid: boolean; errors: string[]; wa
   };
 }
 
-// Export renamed types to avoid conflicts
-export type { SVGElementData, SVGTransformOptions, SVGConversionResult };
-
 // Default export
 export default svgToJsx;

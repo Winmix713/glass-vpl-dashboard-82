@@ -1,3 +1,4 @@
+
 import { CodeGenerationConfig } from '@/types/code-generation';
 
 export interface FrameworkTemplate {
@@ -77,7 +78,7 @@ export default defineComponent({
 ${cssCode}
 </style>`;
 
-    const frameworkTemplate: FrameworkTemplate = {
+    const vueFrameworkTemplate: FrameworkTemplate = {
       name: 'Vue',
       extension: '.vue',
       dependencies: ['vue@^3.3.0'],
@@ -95,7 +96,7 @@ ${cssCode}
       componentCode,
       styleCode: cssCode,
       additionalFiles: {},
-      template: frameworkTemplate
+      template: vueFrameworkTemplate
     };
   }
 

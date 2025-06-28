@@ -61,8 +61,8 @@ export class FigmaApiService {
       const figmaFile: FigmaFile = {
         key: fileId,
         name: data.name || 'Untitled',
-        thumbnail_url: data.thumbnailUrl || '',
-        last_modified: data.lastModified || new Date().toISOString(),
+        lastModified: data.lastModified || new Date().toISOString(),
+        thumbnailUrl: data.thumbnailUrl || '',
         version: '1.0',
         document: data.document!,
         components: data.components || {},
