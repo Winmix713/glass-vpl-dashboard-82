@@ -157,19 +157,25 @@ export class WorkerManager {
       async function transformCode(code, config) {
         let transformed = code;
         
-        switch (config.framework) {
-          case 'vue':
-            transformed = code
-              .replace(/import React/g, 'import { defineComponent }')
-              .replace(/className=/g, 'class=');
-            break;
-          case 'angular':
-            transformed = 'import { Component } from "@angular/core";\\n\\n@Component({\\n  template: \`' + 
-              code.replace(/className=/g, 'class=') + '\`\\n})\\nexport class GeneratedComponent {}';
-            break;
-          case 'svelte':
-            transformed = code.replace(/className=/g, 'class=');
-            break;
+        // Check if config exists and has framework property
+        if (config && config.framework) {
+          switch (config.framework) {
+            case 'vue':
+              transformed = code
+                .replace(/import React/g, 'import { defineComponent }')
+                .replace(/className=/g, 'class=');
+              break;
+            case 'angular':
+              transformed = 'import { Component } from "@angular/core";\\n\\n@Component({\\n  template: \`' + 
+                code.replace(/className=/g, 'class=') + '\`\\n})\\nexport class GeneratedComponent {}';
+              break;
+            case 'svelte':
+              transformed = code.replace(/className=/g, 'class=');
+              break;
+            default:
+              // For React or unknown frameworks, keep the original code
+              break;
+          }
         }
         
         return { transformedCode: transformed };
@@ -185,6 +191,23 @@ export class WorkerManager {
         if (!code.includes('export')) {
           issues.push({ type: 'warning', message: 'No exports found' });
         }
+        
+        // Framework-specific validation
+        if (framework) {
+          switch (framework) {
+            case 'react':
+              if (!code.includes('React') && !code.includes('import')) {
+                issues.push({ type: 'warning', message: 'Missing React import' });
+              }
+              break;
+            case 'vue':
+              if (!code.includes('defineComponent') && !code.includes('export default')) {
+                issues.push({ type: 'warning', message: 'Missing Vue component definition' });
+              }
+              break;
+          }
+        }
+        
         return { valid: true, issues };
       }
     `;

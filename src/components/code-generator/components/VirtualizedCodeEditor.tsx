@@ -247,7 +247,7 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
       {/* Header with label and controls */}
       {label && (
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-gray-300">
+          <label className="text-sm font-medium text-gray-300" htmlFor={`editor-${label?.replace(/\s+/g, '-').toLowerCase()}`}>
             {label}
             {isProcessing && (
               <Loader2 className="inline w-3 h-3 ml-2 animate-spin" />
@@ -262,7 +262,7 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
                 onClick={handleOptimize}
                 disabled={isOptimizing}
                 className="text-gray-400 hover:text-gray-200"
-                title="Optimize SVG"
+                aria-label={isOptimizing ? "Optimizing SVG code" : "Optimize SVG code for better performance"}
               >
                 {isOptimizing ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -277,6 +277,7 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
               size="sm"
               onClick={() => setIsPreviewMode(!isPreviewMode)}
               className="text-gray-400 hover:text-gray-200"
+              aria-label={isPreviewMode ? "Switch to edit mode" : "Switch to preview mode"}
             >
               {isPreviewMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </Button>
@@ -286,6 +287,7 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
               className="text-gray-400 hover:text-gray-200"
+              aria-label={isExpanded ? "Collapse editor" : "Expand editor"}
             >
               {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </Button>
@@ -295,7 +297,10 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
 
       {/* Stats display */}
       {showStats && stats.characters > 0 && (
-        <div className="p-3 rounded-lg border border-gray-600 bg-gray-700">
+        <div 
+          className="p-3 rounded-lg border border-gray-600 bg-gray-700"
+          id={label ? `stats-${label?.replace(/\s+/g, '-').toLowerCase()}` : undefined}
+        >
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-4">
               <span>📄 {stats.lines.toLocaleString()} lines</span>
@@ -360,6 +365,7 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
           // Edit mode - optimized textarea
           <Textarea
             ref={textareaRef}
+            id={label ? `editor-${label?.replace(/\s+/g, '-').toLowerCase()}` : undefined}
             defaultValue={value}
             onChange={handleInputChange}
             placeholder={placeholder}
@@ -376,6 +382,7 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
               overflowWrap: 'break-word',
               whiteSpace: 'pre-wrap'
             }}
+            aria-describedby={showStats ? `stats-${label?.replace(/\s+/g, '-').toLowerCase()}` : undefined}
           />
         )}
 
@@ -388,7 +395,7 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
               size="sm"
               onClick={handleCopy}
               className="h-6 w-6 p-0 bg-gray-800/80 hover:bg-gray-700/80 text-gray-300"
-              title="Copy to clipboard"
+              aria-label={`Copy ${language} code to clipboard`}
             >
               <Copy className="w-3 h-3" />
             </Button>
@@ -398,7 +405,7 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
               size="sm"
               onClick={handleDownload}
               className="h-6 w-6 p-0 bg-gray-800/80 hover:bg-gray-700/80 text-gray-300"
-              title="Download file"
+              aria-label={`Download ${language} code as file`}
             >
               <Download className="w-3 h-3" />
             </Button>
@@ -422,6 +429,7 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
               size="sm"
               onClick={handleCopy}
               className="text-xs h-7 border-gray-600 text-gray-300 hover:bg-gray-700"
+              aria-label={`Copy ${language} code to clipboard`}
             >
               <Copy className="w-3 h-3 mr-1" />
               Copy
@@ -432,6 +440,7 @@ export const VirtualizedCodeEditor: React.FC<VirtualizedCodeEditorProps> = ({
               size="sm"
               onClick={handleDownload}
               className="text-xs h-7 border-gray-600 text-gray-300 hover:bg-gray-700"
+              aria-label={`Download ${language} code as ${language} file`}
             >
               <Download className="w-3 h-3 mr-1" />
               Download

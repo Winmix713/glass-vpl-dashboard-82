@@ -77,6 +77,7 @@ const FileListItem: React.FC<FileListItemProps> = ({ file, onRemove, onView }) =
               size="sm"
               onClick={() => onView(file)}
               className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+              aria-label={`View details for ${file.name}`}
             >
               <Eye className="w-3 h-3" />
             </Button>
@@ -86,6 +87,7 @@ const FileListItem: React.FC<FileListItemProps> = ({ file, onRemove, onView }) =
             size="sm"
             onClick={() => onRemove(file.id)}
             className="h-6 w-6 p-0 text-gray-400 hover:text-red-400"
+            aria-label={`Remove ${file.name} from queue`}
           >
             <Trash2 className="w-3 h-3" />
           </Button>
@@ -140,12 +142,16 @@ const BatchProcessingSummary: React.FC<BatchProcessingSummaryProps> = ({ batchSt
         <div className="text-sm font-medium text-white">
           Batch Processing Progress
         </div>
-        <div className="text-xs text-gray-400">
+        <div className="text-xs text-gray-400" aria-live="polite">
           {completedFiles} of {totalFiles} files processed
         </div>
       </div>
       
-      <Progress value={totalProgress} className="h-2" />
+      <Progress 
+        value={totalProgress} 
+        className="h-2" 
+        aria-label={`Processing progress: ${Math.round(totalProgress)}% complete`}
+      />
       
       <div className="grid grid-cols-3 gap-3 text-center">
         <div className="p-2 bg-gray-700 rounded">
@@ -239,28 +245,34 @@ export const MultiFigmaFileManager: React.FC = () => {
       <CardContent className="space-y-6">
         {/* Add New File */}
         <div className="space-y-3">
-          <Label className="text-gray-300 text-sm font-medium">
+          <Label className="text-gray-300 text-sm font-medium" htmlFor="figma-file-url">
             Add Figma Files
           </Label>
           <div className="flex gap-2">
             <div className="flex-1">
               <Input
+                id="figma-file-url"
                 value={newFileUrl}
                 onChange={(e) => setNewFileUrl(e.target.value)}
                 onKeyPress={handleKeyPress}
                 className="bg-gray-700 border-gray-600 text-white text-sm"
                 placeholder="https://www.figma.com/design/..."
                 disabled={batchProcessing.isActive}
+                aria-describedby="figma-file-url-help"
+                aria-required="true"
               />
             </div>
             <div className="w-32">
               <Input
+                id="figma-file-name"
                 value={newFileName}
                 onChange={(e) => setNewFileName(e.target.value)}
                 onKeyPress={handleKeyPress}
                 className="bg-gray-700 border-gray-600 text-white text-sm"
                 placeholder="File name"
                 disabled={batchProcessing.isActive}
+                aria-label="Optional file name"
+                aria-describedby="figma-file-name-help"
               />
             </div>
             <Button
@@ -268,9 +280,16 @@ export const MultiFigmaFileManager: React.FC = () => {
               disabled={!newFileUrl.trim() || batchProcessing.isActive}
               size="sm"
               className="bg-purple-600 hover:bg-purple-700"
+              aria-label="Add Figma file to processing queue"
             >
               <Plus className="w-4 h-4" />
             </Button>
+          </div>
+          <div id="figma-file-url-help" className="sr-only">
+            Enter a Figma file URL to add to the batch processing queue
+          </div>
+          <div id="figma-file-name-help" className="sr-only">
+            Optional custom name for the file in the queue
           </div>
         </div>
 
@@ -289,6 +308,7 @@ export const MultiFigmaFileManager: React.FC = () => {
                     onClick={handleResetBatch}
                     disabled={batchProcessing.isActive}
                     className="text-gray-300 border-gray-600 hover:bg-gray-700"
+                    aria-label="Reset batch processing and clear all completed files"
                   >
                     <RefreshCw className="w-3 h-3 mr-1" />
                     Reset
@@ -300,6 +320,7 @@ export const MultiFigmaFileManager: React.FC = () => {
                     size="sm"
                     onClick={handleStopBatch}
                     className="text-red-400 border-red-600 hover:bg-red-900/20"
+                    aria-label="Stop batch processing of files"
                   >
                     <Pause className="w-3 h-3 mr-1" />
                     Stop
@@ -310,6 +331,7 @@ export const MultiFigmaFileManager: React.FC = () => {
                     onClick={handleStartBatch}
                     disabled={!canStartBatch}
                     className="bg-green-600 hover:bg-green-700"
+                    aria-label={`Start batch processing of ${batchProcessing.files.length} files`}
                   >
                     <Play className="w-3 h-3 mr-1" />
                     Start Batch
@@ -355,6 +377,7 @@ export const MultiFigmaFileManager: React.FC = () => {
               variant="outline"
               size="sm"
               className="text-gray-300 border-gray-600 hover:bg-gray-700"
+              aria-label={`Download all ${batchProcessing.successCount} successfully processed files`}
             >
               <Download className="w-3 h-3 mr-1" />
               Download All
@@ -363,6 +386,7 @@ export const MultiFigmaFileManager: React.FC = () => {
               variant="outline"
               size="sm"
               className="text-gray-300 border-gray-600 hover:bg-gray-700"
+              aria-label="Generate processing report with success and error details"
             >
               <FileText className="w-3 h-3 mr-1" />
               Generate Report

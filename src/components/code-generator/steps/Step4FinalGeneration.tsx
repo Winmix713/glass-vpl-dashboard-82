@@ -481,10 +481,14 @@ describe('GeneratedComponent', () => {
         {isLoading && generationProgress > 0 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-orange-400">{currentPhase}</span>
-              <span className="text-gray-400">{Math.round(generationProgress)}%</span>
+              <span className="text-orange-400" aria-live="polite">{currentPhase}</span>
+              <span className="text-gray-400" aria-live="polite">{Math.round(generationProgress)}%</span>
             </div>
-            <Progress value={generationProgress} className="h-3" />
+            <Progress 
+              value={generationProgress} 
+              className="h-3" 
+              aria-label={`Code generation progress: ${Math.round(generationProgress)}% complete`}
+            />
           </div>
         )}
 
@@ -518,6 +522,8 @@ describe('GeneratedComponent', () => {
                 size="sm"
                 onClick={() => setShowQualityReport(!showQualityReport)}
                 className="text-blue-400 hover:bg-gray-600 w-full justify-between"
+                aria-expanded={showQualityReport}
+                aria-controls="quality-report-panel"
               >
                 <span>View Quality Report ({codeQuality.issues.length} issues)</span>
                 {showQualityReport ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -525,7 +531,7 @@ describe('GeneratedComponent', () => {
             )}
             
             {showQualityReport && (
-              <div className="mt-3 p-3 bg-gray-800 rounded text-xs space-y-2">
+              <div id="quality-report-panel" className="mt-3 p-3 bg-gray-800 rounded text-xs space-y-2">
                 {codeQuality.issues.map((issue, index) => (
                   <div key={index} className={`flex items-start gap-2 ${
                     issue.type === 'error' ? 'text-red-400' : 
@@ -625,6 +631,7 @@ describe('GeneratedComponent', () => {
             onClick={handleGeneration}
             className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             disabled={(!stepData.jsxCode.trim() && !stepData.moreCssCode.trim()) || isLoading}
+            aria-label={isLoading ? "Generating final code and project files" : "Generate final code with complete project structure"}
           >
             {isLoading ? (
               <>
@@ -644,6 +651,7 @@ describe('GeneratedComponent', () => {
               variant="outline"
               onClick={handleDownloadAll}
               className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              aria-label="Download all generated files as a complete project package"
             >
               <Package className="w-4 h-4 mr-2" />
               Download All
@@ -660,6 +668,7 @@ describe('GeneratedComponent', () => {
               onClick={() => actions.toggleBlock('block4')}
               className="text-green-400 hover:bg-gray-700 w-full justify-between mb-3"
               aria-expanded={uiState.expandedBlocks.block4}
+              aria-controls="final-code-panel"
             >
               <span className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" />
@@ -678,7 +687,7 @@ describe('GeneratedComponent', () => {
             </Button>
             
             {uiState.expandedBlocks.block4 && (
-              <div className="space-y-4">
+              <div id="final-code-panel" className="space-y-4">
                 {/* TSX Component */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -692,6 +701,7 @@ describe('GeneratedComponent', () => {
                         size="sm"
                         onClick={() => handleCopy(stepData.finalTsxCode)}
                         className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                        aria-label="Copy final TSX component code to clipboard"
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
@@ -719,6 +729,7 @@ describe('GeneratedComponent', () => {
                         size="sm"
                         onClick={() => handleCopy(stepData.finalCssCode)}
                         className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                        aria-label="Copy final CSS styles to clipboard"
                       >
                         <Copy className="w-3 h-3" />
                       </Button>

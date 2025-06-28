@@ -514,6 +514,7 @@ export const Step3CssImplementation: React.FC = () => {
             onClick={handleSave}
             className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             disabled={!stepData.cssCode.trim()}
+            aria-label="Save CSS code and proceed to next step"
           >
             <Palette className="w-4 h-4 mr-2" />
             Save CSS Code
@@ -524,6 +525,7 @@ export const Step3CssImplementation: React.FC = () => {
             onClick={handleOptimize}
             disabled={!stepData.cssCode.trim() || isOptimizing}
             className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            aria-label={isOptimizing ? "Optimizing CSS code" : "Optimize CSS code for better performance"}
           >
             {isOptimizing ? (
               <div className="w-4 h-4 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
@@ -537,6 +539,7 @@ export const Step3CssImplementation: React.FC = () => {
               variant="outline"
               onClick={() => handleCopy(stepData.cssCode)}
               className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              aria-label="Copy CSS code to clipboard"
             >
               <Copy className="w-4 h-4" />
             </Button>
@@ -576,6 +579,7 @@ export const Step3CssImplementation: React.FC = () => {
                 size="sm"
                 onClick={() => handleCopy(optimizedCss)}
                 className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                aria-label="Copy optimized CSS code to clipboard"
               >
                 <Copy className="w-4 h-4 mr-2" />
                 Copy Optimized
@@ -593,6 +597,7 @@ export const Step3CssImplementation: React.FC = () => {
                   URL.revokeObjectURL(url);
                 }}
                 className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                aria-label="Download optimized CSS as file"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download
@@ -605,6 +610,7 @@ export const Step3CssImplementation: React.FC = () => {
                   setShowOptimized(false);
                 }}
                 className="border-green-600 text-green-400 hover:bg-green-900/20"
+                aria-label="Replace current CSS with optimized version"
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
                 Use Optimized

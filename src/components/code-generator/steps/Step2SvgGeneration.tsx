@@ -416,6 +416,7 @@ export const Step2SvgGeneration: React.FC = () => {
             onClick={handleConversion}
             className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             disabled={!stepData.svgCode.trim() || isLoading}
+            aria-label={isLoading ? "Converting SVG to TSX component" : "Convert SVG code to TypeScript React component"}
           >
             {isLoading ? (
               <>
@@ -435,6 +436,7 @@ export const Step2SvgGeneration: React.FC = () => {
               variant="outline"
               onClick={() => handleCopy(stepData.svgCode)}
               className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              aria-label="Copy SVG code to clipboard"
             >
               <Copy className="w-4 h-4" />
             </Button>
@@ -450,6 +452,7 @@ export const Step2SvgGeneration: React.FC = () => {
               onClick={() => actions.toggleBlock('block2')}
               className="text-green-400 hover:bg-gray-700 w-full justify-between mb-3"
               aria-expanded={uiState.expandedBlocks.block2}
+              aria-controls="generated-tsx-panel"
             >
               <span className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" />
@@ -463,7 +466,7 @@ export const Step2SvgGeneration: React.FC = () => {
             </Button>
             
             {uiState.expandedBlocks.block2 && (
-              <div className="space-y-3">
+              <div id="generated-tsx-panel" className="space-y-3">
                 <VirtualizedCodeEditor
                   value={stepData.generatedTsxCode}
                   onChange={() => {}} // Read-only
@@ -478,6 +481,7 @@ export const Step2SvgGeneration: React.FC = () => {
                     size="sm"
                     onClick={() => handleCopy(stepData.generatedTsxCode)}
                     className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                    aria-label="Copy generated TSX component code to clipboard"
                   >
                     <Copy className="w-4 h-4 mr-2" />
                     Copy TSX
@@ -495,6 +499,7 @@ export const Step2SvgGeneration: React.FC = () => {
                       URL.revokeObjectURL(url);
                     }}
                     className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                    aria-label="Download generated TSX component as file"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download
