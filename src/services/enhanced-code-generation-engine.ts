@@ -1,4 +1,3 @@
-
 import { memoryManager } from '@/utils/memoryManager';
 import { workerManager } from '@/utils/workerManager';
 import { aiDesignAnalyzer } from './aiDesignAnalyzer';
@@ -7,6 +6,7 @@ import { codeAssembler } from './code-generation/CodeAssembler';
 import { metricsCalculator } from './code-generation/MetricsCalculator';
 import { codeValidator } from './code-generation/CodeValidator';
 import { qualityAssessor } from './code-generation/QualityAssessor';
+import { normalizeFigmaData, validateFigmaData } from '@/utils/figmaDataNormalizer';
 import { 
   CodeGenerationConfig, 
   GeneratedCode, 
@@ -46,20 +46,45 @@ export class EnhancedCodeGenerationEngine {
   }
 
   /**
-   * Extract SVG content from Figma data
+   * Enhanced SVG extraction with robust data structure handling
    */
   async extractSVGFromFigma(figmaData: any): Promise<string> {
+    console.log('Starting SVG extraction from Figma data...');
+    
     try {
-      if (figmaData?.document?.children) {
-        const width = 400;
-        const height = 300;
+      // Validate and normalize the Figma data structure
+      const validation = validateFigmaData(figmaData);
+      console.log('Figma data validation result:', validation);
+
+      if (!validation.isValid) {
+        console.error('Figma data validation failed:', validation.error);
+        return this.createFallbackSVG(`Validation failed: ${validation.error}`);
+      }
+
+      const normalizedData = normalizeFigmaData(figmaData);
+      if (!normalizedData) {
+        console.error('Failed to normalize Figma data structure');
+        return this.createFallbackSVG('Unable to normalize Figma data structure');
+      }
+
+      console.log(`Successfully normalized Figma data (${validation.structure} structure) with ${validation.childrenCount} children`);
+
+      // Extract SVG from normalized data
+      const width = 400;
+      const height = 300;
+      
+      let svgContent = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+      
+      const extractShapes = (nodes: any[], offsetX = 0, offsetY = 0): string => {
+        let shapes = '';
         
-        let svgContent = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+        if (!Array.isArray(nodes)) {
+          console.warn('Expected array of nodes, got:', typeof nodes);
+          return shapes;
+        }
         
-        const extractShapes = (nodes: any[], offsetX = 0, offsetY = 0): string => {
-          let shapes = '';
-          
-          nodes.forEach(node => {
+        nodes.forEach((node, index) => {
+          try {
             if (node.absoluteBoundingBox) {
               const { x, y, width: w, height: h } = node.absoluteBoundingBox;
               
@@ -75,35 +100,60 @@ export class EnhancedCodeGenerationEngine {
                 case 'TEXT':
                   shapes += `<text x="${x + offsetX}" y="${y + offsetY + 16}" font-family="Arial, sans-serif" font-size="14" fill="#333">${node.characters || 'Text'}</text>`;
                   break;
+                default:
+                  console.log(`Unhandled node type: ${node.type}`);
               }
             }
             
-            if (node.children) {
+            if (node.children && Array.isArray(node.children)) {
               shapes += extractShapes(node.children, offsetX, offsetY);
             }
-          });
-          
-          return shapes;
-        };
+          } catch (nodeError) {
+            console.warn(`Error processing node ${index}:`, nodeError);
+          }
+        });
         
-        svgContent += extractShapes(figmaData.document.children);
-        svgContent += '</svg>';
-        
-        return svgContent;
-      }
+        return shapes;
+      };
       
-      return `<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-        <rect x="50" y="50" width="300" height="200" fill="#f0f0f0" stroke="#ccc" stroke-width="2" rx="8"/>
-        <text x="200" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#666">Generated from Figma</text>
-      </svg>`;
+      const extractedShapes = extractShapes(normalizedData.document.children);
+      svgContent += extractedShapes;
+      svgContent += '</svg>';
+      
+      if (extractedShapes.trim()) {
+        console.log('Successfully extracted SVG with shapes');
+        return svgContent;
+      } else {
+        console.warn('No shapes were extracted, returning default SVG');
+        return this.createDefaultSVG();
+      }
       
     } catch (error) {
       console.error('SVG extraction error:', error);
-      return `<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-        <rect x="10" y="10" width="380" height="280" fill="none" stroke="#ddd" stroke-width="1"/>
-        <text x="200" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#999">SVG Generation Error</text>
-      </svg>`;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown extraction error';
+      return this.createFallbackSVG(errorMessage);
     }
+  }
+
+  /**
+   * Create a fallback SVG when extraction fails
+   */
+  private createFallbackSVG(errorMessage: string): string {
+    return `<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="10" width="380" height="280" fill="none" stroke="#ddd" stroke-width="1"/>
+      <text x="200" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#999">SVG Generation Error</text>
+      <text x="200" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#666">${errorMessage}</text>
+    </svg>`;
+  }
+
+  /**
+   * Create a default SVG for successful extraction with no shapes
+   */
+  private createDefaultSVG(): string {
+    return `<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+      <rect x="50" y="50" width="300" height="200" fill="#f0f0f0" stroke="#ccc" stroke-width="2" rx="8"/>
+      <text x="200" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#666">Generated from Figma</text>
+    </svg>`;
   }
 
   /**
